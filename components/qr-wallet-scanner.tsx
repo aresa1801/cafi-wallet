@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Camera, X, Scan, Wifi, Shield, CheckCircle, AlertTriangle, RotateCcw } from "lucide-react"
 import { PageHeader } from "./page-header"
+import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
 
 interface QRWalletScannerProps {
   onClose: () => void
-  onWalletConnect: (connectionData: any) => void
+  onWalletConnect: (connectionData: any) => void // This will now trigger the Web3 provider connection
 }
 
 interface ConnectionData {
@@ -30,6 +31,8 @@ export function QRWalletScanner({ onClose, onWalletConnect }: QRWalletScannerPro
   const [scanError, setScanError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  const { connectDApp } = useCarbonFiWeb3() // Use the Web3 provider hook
 
   // Mock QR code processing function
   const processQRCode = useCallback(async (qrData: string): Promise<ConnectionData> => {
@@ -138,9 +141,13 @@ export function QRWalletScanner({ onClose, onWalletConnect }: QRWalletScannerPro
     setIsConnecting(true)
 
     try {
-      // Simulate connection process
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      onWalletConnect(connectionData)
+      // Connect to the CarbonFi Web3 provider
+      await connectDApp({
+        name: connectionData.dapp,
+        address: connectionData.address,
+        chainId: connectionData.chainId,
+      })
+      onWalletConnect(connectionData) // Notify parent component
       onClose()
     } catch (error) {
       console.error("Connection failed:", error)
@@ -148,7 +155,7 @@ export function QRWalletScanner({ onClose, onWalletConnect }: QRWalletScannerPro
     } finally {
       setIsConnecting(false)
     }
-  }, [connectionData, onWalletConnect, onClose])
+  }, [connectionData, onWalletConnect, onClose, connectDApp])
 
   const resetScanner = useCallback(() => {
     setConnectionData(null)
@@ -283,7 +290,7 @@ export function QRWalletScanner({ onClose, onWalletConnect }: QRWalletScannerPro
                       <Button
                         variant="outline"
                         onClick={stopCamera}
-                        className="border-soft-accent/30 text-soft-accent hover:bg-soft-accent/10 hover:border-soft-accent/50"
+                        className="border-soft-accent/30 text-soft-accent hover:bg-soft-accent/10 hover:border-soft-accent/50 bg-transparent"
                       >
                         <RotateCcw className="w-4 h-4 mr-2" />
                         Stop
@@ -497,7 +504,7 @@ export function QRWalletScanner({ onClose, onWalletConnect }: QRWalletScannerPro
                   <Button
                     variant="outline"
                     onClick={resetScanner}
-                    className="border-neutral-300 dark:border-neutral-600 text-text-secondary dark:text-text-dark-secondary hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    className="border-neutral-300 dark:border-neutral-600 text-text-secondary dark:text-text-dark-secondary hover:bg-neutral-100 dark:hover:bg-neutral-800 bg-transparent"
                   >
                     <RotateCcw className="w-4 h-4" />
                   </Button>

@@ -23,18 +23,19 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   History,
+  Wifi,
 } from "lucide-react"
 import { MobileChainSelector } from "./mobile-chain-selector"
-import { CarbonScanner } from "./carbon-scanner"
 import { DAOGovernance } from "./dao-governance"
 import { CarbonAnalytics } from "./carbon-analytics"
 import { CarbonOffsetHistory } from "./carbon-offset-history"
-import { CarbonFiLogo } from "./carbonfi-logo"
-import { ThemeToggle } from "./theme-toggle"
 import { SustainabilityOrnaments } from "./sustainability-ornaments"
 import { GreenParticles } from "./green-particles"
 import { EcoBadge } from "./eco-badge"
 import { WalletConnectButton } from "./wallet-connect-button"
+import { PageHeader } from "./page-header"
+import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
+import { QRWalletScanner } from "./qr-wallet-scanner" // Import QRWalletScanner
 
 const CAFI_CONTRACT_ADDRESS = "0xa5359E55423E47Afe93D86b1bdaD827f1C1c16EB"
 
@@ -43,15 +44,15 @@ interface MobileWalletDashboardProps {
   walletInfo?: any
 }
 
-type TabType = "home" | "offsets" | "analytics" | "dao" | "profile"
+type TabType = "home" | "offsets" | "analytics" | "dao" | "profile" | "scanner"
 
 export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDashboardProps) {
   const [activeTab, setActiveTab] = useState<TabType>("home")
   const [selectedChain, setSelectedChain] = useState<"arbitrum" | "base" | "polygon">("arbitrum")
   const [carbonOffset, setCarbonOffset] = useState(12.5)
   const [carbonGoal] = useState(50)
-  const [showScanner, setShowScanner] = useState(false)
-  const [showDAO, setShowDAO] = useState(false)
+
+  const { isConnected, connectedDapp, pendingRequest, approveRequest, rejectRequest } = useCarbonFiWeb3()
 
   // Update the portfolioData object to include ETH, BASE, POLYGON, and CAFI assets
   const portfolioData = {
@@ -124,14 +125,6 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
       color: "text-soft-accent",
     },
   ]
-
-  if (showScanner) {
-    return <CarbonScanner onClose={() => setShowScanner(false)} onOffsetComplete={handleOffsetComplete} />
-  }
-
-  if (showDAO) {
-    return <DAOGovernance userTokenBalance={totalCafi} onBack={() => setShowDAO(false)} />
-  }
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -226,20 +219,20 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-col h-16 border-soft-accent/30 text-soft-accent hover:bg-soft-accent/10 hover:border-soft-accent/50 transition-all duration-300 hover:scale-105"
+                    className="flex-col h-16 border-soft-accent/30 text-soft-accent hover:bg-soft-accent/10 hover:border-soft-accent/50 transition-all duration-300 hover:scale-105 bg-transparent"
                   >
                     <Download className="w-5 h-5 mb-1" />
                     <span className="text-xs">Receive</span>
                   </Button>
                   <Button
-                    onClick={() => setShowScanner(true)}
+                    onClick={() => setActiveTab("scanner")}
                     className="flex-col h-16 bg-gradient-to-br from-soft-warning to-soft-error hover:from-soft-warning/90 hover:to-soft-error/90 text-white font-medium transition-all duration-300 hover:scale-105 shadow-soft"
                   >
                     <Camera className="w-5 h-5 mb-1" />
                     <span className="text-xs">Scan</span>
                   </Button>
                   <Button
-                    onClick={() => setShowDAO(true)}
+                    onClick={() => setActiveTab("dao")}
                     className="flex-col h-16 bg-gradient-to-br from-soft-secondary to-soft-accent hover:from-soft-secondary/90 hover:to-soft-accent/90 text-white font-medium transition-all duration-300 hover:scale-105 shadow-soft"
                   >
                     <Vote className="w-5 h-5 mb-1" />
@@ -489,7 +482,18 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
             </Card>
           </div>
         )
-
+      case "scanner":
+        return (
+          <QRWalletScanner
+            onClose={() => setActiveTab("home")}
+            onWalletConnect={(data) => {
+              // This is where the QR scanner would initiate a connection to the Web3 provider
+              // For now, we'll just log it and go back home.
+              console.log("QR Scanner connected:", data)
+              setActiveTab("home")
+            }}
+          />
+        )
       default:
         return null
     }
@@ -506,23 +510,14 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-bg-dark dark:to-bg-dark-secondary flex flex-col">
       {/* Header */}
-      <div className="bg-white/80 dark:bg-bg-dark-secondary/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700 p-4 sticky top-0 z-40 shadow-soft relative">
-        <SustainabilityOrnaments variant="floating" />
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center space-x-3">
-            <CarbonFiLogo variant="icon" size="md" />
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-bold text-lg text-text-primary dark:text-text-dark-primary">CarbonFi</h1>
-                <EcoBadge variant="carbon-neutral" size="sm" />
-              </div>
-              <p className="text-xs text-text-secondary dark:text-text-dark-secondary">Sustainable Web3 Wallet</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
+      <PageHeader
+        title="CarbonFi"
+        subtitle="Sustainable Web3 Wallet"
+        badge="carbon-neutral"
+        rightContent={
+          <>
             <MobileChainSelector selectedChain={selectedChain} onChainChange={setSelectedChain} />
             <WalletConnectButton />
-            <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
@@ -530,9 +525,17 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
             >
               <Bell className="w-4 h-4" />
             </Button>
-          </div>
+          </>
+        }
+      />
+
+      {/* DApp Connection Status */}
+      {isConnected && connectedDapp && (
+        <div className="bg-soft-success/10 text-soft-success border-b border-soft-success/20 p-2 text-center text-sm flex items-center justify-center gap-2">
+          <Wifi className="w-4 h-4" />
+          <span>Connected to {connectedDapp}</span>
         </div>
-      </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto p-4 pb-24">{renderTabContent()}</div>

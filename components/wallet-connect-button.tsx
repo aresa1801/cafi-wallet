@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { QrCode, Wifi, WifiOff } from "lucide-react"
 import { QRWalletScanner } from "./qr-wallet-scanner"
+import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
 
 interface WalletConnectButtonProps {
   className?: string
@@ -12,18 +13,17 @@ interface WalletConnectButtonProps {
 
 export function WalletConnectButton({ className }: WalletConnectButtonProps) {
   const [showScanner, setShowScanner] = useState(false)
-  const [isConnected, setIsConnected] = useState(false)
-  const [connectedDapp, setConnectedDapp] = useState<string | null>(null)
+  const { isConnected, connectedDapp, disconnectDApp } = useCarbonFiWeb3()
 
   const handleWalletConnect = (connectionData: any) => {
-    setIsConnected(true)
-    setConnectedDapp(connectionData.dapp)
-    console.log("Connected to:", connectionData)
+    // This function is now primarily for closing the scanner,
+    // the actual connection is handled by the Web3 provider.
+    console.log("QR Scanner closed after connection attempt:", connectionData)
+    setShowScanner(false)
   }
 
   const handleDisconnect = () => {
-    setIsConnected(false)
-    setConnectedDapp(null)
+    disconnectDApp() // Disconnect via the Web3 provider
   }
 
   if (showScanner) {

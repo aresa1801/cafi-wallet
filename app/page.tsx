@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { SplashScreen } from "@/components/splash-screen"
 import { MobileLoginScreen } from "@/components/mobile-login-screen"
 import { MobileWalletDashboard } from "@/components/mobile-wallet-dashboard"
+import { CarbonFiWeb3Provider } from "@/providers/carbonfi-web3-provider"
 
 export default function CarbonFiWallet() {
   const [showSplash, setShowSplash] = useState(true)
@@ -15,10 +16,7 @@ export default function CarbonFiWallet() {
   useEffect(() => {
     // Detect if user is on mobile
     const checkMobile = () => {
-      setIsMobile(
-        window.innerWidth < 768 ||
-          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-      )
+      setIsMobile(window.innerWidth < 768 || /Android|webOS|iPhone|iPad|IEMobile|Opera Mini/i.test(navigator.userAgent))
     }
 
     checkMobile()
@@ -40,5 +38,9 @@ export default function CarbonFiWallet() {
     return <MobileLoginScreen onLogin={handleLogin} />
   }
 
-  return <MobileWalletDashboard walletType={walletType!} walletInfo={walletInfo} />
+  return (
+    <CarbonFiWeb3Provider>
+      <MobileWalletDashboard walletType={walletType!} walletInfo={walletInfo} />
+    </CarbonFiWeb3Provider>
+  )
 }

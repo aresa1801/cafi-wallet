@@ -1,124 +1,39 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import {
-  Camera,
-  Leaf,
-  Zap,
-  Car,
-  Plane,
-  Home,
-  ShoppingCart,
-  X,
-  Check,
-  Upload,
-  RotateCcw,
-  Calculator,
-} from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Camera, Upload, CheckCircle, X, Leaf, Loader2, AlertTriangle, Scan } from "lucide-react"
 import { PageHeader } from "./page-header"
-import { EcoBadge } from "./eco-badge"
+import { Badge } from "@/components/ui/badge"
 
 interface CarbonScannerProps {
   onClose: () => void
   onOffsetComplete: (amount: number, type: string) => void
 }
 
-interface ScanResult {
-  type: "receipt" | "fuel" | "flight" | "utility"
-  amount: number
-  carbonFootprint: number
-  details: {
-    merchant?: string
-    date?: string
-    items?: string[]
-    distance?: number
-    fuelType?: string
-    flightRoute?: string
-    utilityType?: string
-  }
-}
-
 export function CarbonScanner({ onClose, onOffsetComplete }: CarbonScannerProps) {
-  const [isScanning, setIsScanning] = useState(false)
-  const [scanResult, setScanResult] = useState<ScanResult | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [scanMode, setScanMode] = useState<"camera" | "upload">("camera")
+  const [scanStatus, setScanStatus] = useState<"idle" | "scanning" | "processing" | "complete" | "error">("idle")
+  const [scannedData, setScannedData] = useState<any>(null)
   const [cameraActive, setCameraActive] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Mock OCR processing function
-  const processImage = useCallback(async (imageData: string): Promise<ScanResult> => {
-    // Simulate OCR processing delay
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    // Mock OCR results - in real implementation, this would use actual OCR
-    const mockResults: ScanResult[] = [
-      {
-        type: "receipt",
-        amount: 45.67,
-        carbonFootprint: 2.3,
-        details: {
-          merchant: "Green Grocery Store",
-          date: new Date().toLocaleDateString(),
-          items: ["Organic vegetables", "Local fruits", "Dairy products"],
-        },
-      },
-      {
-        type: "fuel",
-        amount: 89.5,
-        carbonFootprint: 18.7,
-        details: {
-          merchant: "Shell Gas Station",
-          date: new Date().toLocaleDateString(),
-          fuelType: "Gasoline",
-          distance: 450,
-        },
-      },
-      {
-        type: "flight",
-        amount: 299.99,
-        carbonFootprint: 125.4,
-        details: {
-          merchant: "AirAsia",
-          date: new Date().toLocaleDateString(),
-          flightRoute: "Jakarta → Singapore",
-          distance: 900,
-        },
-      },
-      {
-        type: "utility",
-        amount: 156.78,
-        carbonFootprint: 45.2,
-        details: {
-          merchant: "PLN Indonesia",
-          date: new Date().toLocaleDateString(),
-          utilityType: "Electricity",
-        },
-      },
-    ]
-
-    return mockResults[Math.floor(Math.random() * mockResults.length)]
-  }, [])
-
   const startCamera = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      })
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
       if (videoRef.current) {
         videoRef.current.srcObject = stream
         setCameraActive(true)
+        setScanStatus("idle")
       }
     } catch (error) {
       console.error("Error accessing camera:", error)
+      setScanStatus("error")
     }
   }, [])
 
@@ -130,116 +45,79 @@ export function CarbonScanner({ onClose, onOffsetComplete }: CarbonScannerProps)
     }
   }, [])
 
-  const captureImage = useCallback(async () => {
-    if (!videoRef.current || !canvasRef.current) return
+  const handleScan = useCallback(async () => {
+    if (scanMode === "camera") {
+      if (!videoRef.current || !canvasRef.current) return
 
-    const canvas = canvasRef.current
-    const video = videoRef.current
-    const context = canvas.getContext("2d")
+      const canvas = canvasRef.current
+      const video = videoRef.current
+      const context = canvas.getContext("2d")
 
-    if (!context) return
+      if (!context) return
 
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-    context.drawImage(video, 0, 0)
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      context.drawImage(video, 0, 0)
 
-    const imageData = canvas.toDataURL("image/jpeg")
+      setScanStatus("scanning")
+      stopCamera()
 
-    setIsProcessing(true)
-    stopCamera()
+      // Simulate OCR processing
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      setScannedData({
+        type: "receipt",
+        items: [
+          { name: "Groceries", co2_kg: 5.2 },
+          { name: "Electronics", co2_kg: 12.8 },
+        ],
+        total_co2_kg: 18.0,
+      })
+      setScanStatus("complete")
+    } else {
+      // Handle file upload scan
+      if (!fileInputRef.current?.files?.length) return
 
-    try {
-      const result = await processImage(imageData)
-      setScanResult(result)
-    } catch (error) {
-      console.error("Error processing image:", error)
-    } finally {
-      setIsProcessing(false)
+      setScanStatus("processing")
+      // Simulate file upload and processing
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+      setScannedData({
+        type: "invoice",
+        items: [
+          { name: "Flight (NYC-LAX)", co2_kg: 250.0 },
+          { name: "Hotel (3 nights)", co2_kg: 30.0 },
+        ],
+        total_co2_kg: 280.0,
+      })
+      setScanStatus("complete")
     }
-  }, [processImage, stopCamera])
-
-  const handleFileUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0]
-      if (!file) return
-
-      const reader = new FileReader()
-      reader.onload = async (e) => {
-        const imageData = e.target?.result as string
-        setIsProcessing(true)
-
-        try {
-          const result = await processImage(imageData)
-          setScanResult(result)
-        } catch (error) {
-          console.error("Error processing image:", error)
-        } finally {
-          setIsProcessing(false)
-        }
-      }
-      reader.readAsDataURL(file)
-    },
-    [processImage],
-  )
+  }, [scanMode, stopCamera])
 
   const handleOffset = useCallback(() => {
-    if (scanResult) {
-      onOffsetComplete(scanResult.carbonFootprint, scanResult.type)
-      onClose()
+    if (scannedData) {
+      onOffsetComplete(scannedData.total_co2_kg, scannedData.type)
+      setScanStatus("idle")
+      setScannedData(null)
+      onClose() // Close scanner after offset
     }
-  }, [scanResult, onOffsetComplete, onClose])
+  }, [scannedData, onOffsetComplete, onClose])
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "receipt":
-        return ShoppingCart
-      case "fuel":
-        return Car
-      case "flight":
-        return Plane
-      case "utility":
-        return Home
-      default:
-        return Leaf
-    }
-  }
+  const resetScanner = useCallback(() => {
+    setScanStatus("idle")
+    setScannedData(null)
+    stopCamera()
+  }, [stopCamera])
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "receipt":
-        return "text-soft-success"
-      case "fuel":
-        return "text-soft-warning"
-      case "flight":
-        return "text-soft-accent"
-      case "utility":
-        return "text-soft-secondary"
-      default:
-        return "text-soft-primary"
+  useEffect(() => {
+    return () => {
+      stopCamera()
     }
-  }
-
-  const getTypeBg = (type: string) => {
-    switch (type) {
-      case "receipt":
-        return "bg-soft-success/10 border-soft-success/20"
-      case "fuel":
-        return "bg-soft-warning/10 border-soft-warning/20"
-      case "flight":
-        return "bg-soft-accent/10 border-soft-accent/20"
-      case "utility":
-        return "bg-soft-secondary/10 border-soft-secondary/20"
-      default:
-        return "bg-soft-primary/10 border-soft-primary/20"
-    }
-  }
+  }, [stopCamera])
 
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-bg-dark dark:to-bg-dark-secondary z-50 flex flex-col">
-      {/* Header with Back Button */}
       <PageHeader
         title="Carbon Scanner"
-        subtitle="Scan receipts & bills to offset carbon"
+        subtitle="Scan receipts or invoices to offset carbon"
         onBack={onClose}
         badge="eco-friendly"
         rightContent={
@@ -254,267 +132,176 @@ export function CarbonScanner({ onClose, onOffsetComplete }: CarbonScannerProps)
         }
       />
 
-      <div className="flex-1 overflow-auto">
-        {!scanResult && !isProcessing && (
-          <div className="p-4 space-y-6">
-            {/* Scan Options */}
-            <Tabs defaultValue="camera" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-white/60 dark:bg-bg-dark-secondary/60 backdrop-blur-sm border border-neutral-200 dark:border-neutral-700">
-                <TabsTrigger
-                  value="camera"
-                  className="data-[state=active]:bg-soft-primary data-[state=active]:text-white"
-                  onClick={() => !cameraActive && startCamera()}
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  Camera
-                </TabsTrigger>
-                <TabsTrigger
-                  value="upload"
-                  className="data-[state=active]:bg-soft-accent data-[state=active]:text-white"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload
-                </TabsTrigger>
-              </TabsList>
+      <div className="flex-1 overflow-auto p-4 space-y-6">
+        {scanStatus === "idle" && (
+          <Card className="bg-white/80 dark:bg-bg-dark-secondary/80 backdrop-blur-sm border-neutral-200 dark:border-neutral-700 shadow-soft-lg">
+            <CardHeader>
+              <CardTitle className="text-lg text-text-primary dark:text-text-dark-primary flex items-center gap-2">
+                <Camera className="w-5 h-5 text-soft-primary" />
+                Choose Scan Mode
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Select value={scanMode} onValueChange={(value: "camera" | "upload") => setScanMode(value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select scan mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="camera">Camera Scan (Receipts)</SelectItem>
+                  <SelectItem value="upload">Upload Document (Invoices)</SelectItem>
+                </SelectContent>
+              </Select>
 
-              <TabsContent value="camera" className="mt-4">
-                <Card className="bg-white/80 dark:bg-bg-dark-secondary/80 backdrop-blur-sm border-neutral-200 dark:border-neutral-700 shadow-soft-lg">
-                  <CardContent className="p-4">
-                    <div className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 rounded-xl overflow-hidden mb-4">
-                      <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-                      <canvas ref={canvasRef} className="hidden" />
-
-                      {/* Camera overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-64 h-40 border-2 border-soft-primary rounded-lg border-dashed animate-pulse">
-                          <div className="absolute -top-2 -left-2 w-4 h-4 border-l-2 border-t-2 border-soft-primary"></div>
-                          <div className="absolute -top-2 -right-2 w-4 h-4 border-r-2 border-t-2 border-soft-primary"></div>
-                          <div className="absolute -bottom-2 -left-2 w-4 h-4 border-l-2 border-b-2 border-soft-primary"></div>
-                          <div className="absolute -bottom-2 -right-2 w-4 h-4 border-r-2 border-b-2 border-soft-primary"></div>
-                        </div>
+              {scanMode === "camera" && (
+                <div className="relative aspect-square bg-neutral-100 dark:bg-neutral-800 rounded-xl overflow-hidden">
+                  <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                  <canvas ref={canvasRef} className="hidden" />
+                  {!cameraActive && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <Camera className="w-12 h-12 mx-auto mb-4 opacity-70" />
+                        <p className="text-lg font-semibold mb-2">Camera Not Active</p>
+                        <p className="text-sm opacity-80">Tap "Start Camera" to begin scanning</p>
                       </div>
                     </div>
-
-                    <div className="flex justify-center space-x-4">
-                      <Button
-                        onClick={captureImage}
-                        disabled={!cameraActive}
-                        className="bg-gradient-to-r from-soft-primary to-soft-secondary hover:from-soft-primary/90 hover:to-soft-secondary/90 text-white font-medium px-8 shadow-soft"
-                      >
-                        <Camera className="w-5 h-5 mr-2" />
-                        Capture
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={cameraActive ? stopCamera : startCamera}
-                        className="border-soft-accent/30 text-soft-accent hover:bg-soft-accent/10 hover:border-soft-accent/50"
-                      >
-                        <RotateCcw className="w-4 h-4 mr-2" />
-                        {cameraActive ? "Stop" : "Start"}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="upload" className="mt-4">
-                <Card className="bg-white/80 dark:bg-bg-dark-secondary/80 backdrop-blur-sm border-neutral-200 dark:border-neutral-700 shadow-soft-lg">
-                  <CardContent className="p-6">
-                    <div
-                      className="border-2 border-dashed border-soft-accent/30 rounded-xl p-8 text-center cursor-pointer hover:bg-soft-accent/5 hover:border-soft-accent/50 transition-colors duration-300"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Upload className="w-12 h-12 text-soft-accent mx-auto mb-4" />
-                      <p className="text-text-primary dark:text-text-dark-primary font-medium mb-2">
-                        Upload Receipt or Bill
-                      </p>
-                      <p className="text-text-secondary dark:text-text-dark-secondary text-sm">
-                        Click to select image from gallery
-                      </p>
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-
-            {/* Supported Types */}
-            <Card className="bg-white/80 dark:bg-bg-dark-secondary/80 backdrop-blur-sm border-neutral-200 dark:border-neutral-700 shadow-soft-lg">
-              <CardHeader>
-                <CardTitle className="text-lg text-text-primary dark:text-text-dark-primary">
-                  Supported Documents
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center space-x-3 p-3 bg-soft-success/10 rounded-lg border border-soft-success/20">
-                    <ShoppingCart className="w-5 h-5 text-soft-success" />
-                    <span className="text-text-primary dark:text-text-dark-primary text-sm font-medium">
-                      Shopping Receipts
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 bg-soft-warning/10 rounded-lg border border-soft-warning/20">
-                    <Car className="w-5 h-5 text-soft-warning" />
-                    <span className="text-text-primary dark:text-text-dark-primary text-sm font-medium">
-                      Fuel Bills
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 bg-soft-accent/10 rounded-lg border border-soft-accent/20">
-                    <Plane className="w-5 h-5 text-soft-accent" />
-                    <span className="text-text-primary dark:text-text-dark-primary text-sm font-medium">
-                      Flight Tickets
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 bg-soft-secondary/10 rounded-lg border border-soft-secondary/20">
-                    <Home className="w-5 h-5 text-soft-secondary" />
-                    <span className="text-text-primary dark:text-text-dark-primary text-sm font-medium">
-                      Utility Bills
-                    </span>
-                  </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              )}
+
+              {scanMode === "upload" && (
+                <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
+                  <Upload className="w-12 h-12 text-neutral-400 dark:text-neutral-500 mb-4" />
+                  <p className="text-text-secondary dark:text-text-dark-secondary mb-2">Drag & drop or</p>
+                  <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    Browse Files
+                  </Button>
+                  <Input type="file" ref={fileInputRef} className="hidden" accept="image/*,.pdf" />
+                </div>
+              )}
+
+              {scanStatus === "error" && (
+                <div className="flex items-center space-x-2 p-3 bg-soft-error/10 border border-soft-error/20 rounded-lg">
+                  <AlertTriangle className="w-5 h-5 text-soft-error" />
+                  <p className="text-sm text-soft-error">Failed to access camera or process scan. Please try again.</p>
+                </div>
+              )}
+
+              <div className="flex justify-center space-x-4">
+                {scanMode === "camera" && !cameraActive && (
+                  <Button
+                    onClick={startCamera}
+                    className="bg-gradient-to-r from-soft-primary to-soft-secondary hover:from-soft-primary/90 hover:to-soft-secondary/90 text-white font-medium px-8 shadow-soft"
+                  >
+                    <Camera className="w-5 h-5 mr-2" />
+                    Start Camera
+                  </Button>
+                )}
+                {(scanMode === "camera" && cameraActive) || scanMode === "upload" ? (
+                  <Button
+                    onClick={handleScan}
+                    disabled={scanStatus === "scanning" || scanStatus === "processing"}
+                    className="bg-gradient-to-r from-soft-primary to-soft-secondary hover:from-soft-primary/90 hover:to-soft-secondary/90 text-white font-medium px-8 shadow-soft"
+                  >
+                    {scanStatus === "scanning" || scanStatus === "processing" ? (
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    ) : (
+                      <Scan className="w-5 h-5 mr-2" />
+                    )}
+                    {scanStatus === "scanning"
+                      ? "Scanning..."
+                      : scanStatus === "processing"
+                        ? "Processing..."
+                        : "Scan Document"}
+                  </Button>
+                ) : null}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Processing State */}
-        {isProcessing && (
-          <div className="flex-1 flex items-center justify-center p-8">
+        {(scanStatus === "scanning" || scanStatus === "processing") && (
+          <div className="flex-1 flex items-center justify-center">
             <Card className="bg-white/80 dark:bg-bg-dark-secondary/80 backdrop-blur-sm border-neutral-200 dark:border-neutral-700 w-full max-w-sm shadow-soft-lg">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-gradient-to-br from-soft-primary to-soft-accent rounded-full flex items-center justify-center mx-auto mb-4 animate-soft-glow shadow-soft">
-                  <Calculator className="w-8 h-8 text-white" />
+                  <Scan className="w-8 h-8 text-white animate-pulse" />
                 </div>
                 <h3 className="text-xl font-bold text-text-primary dark:text-text-dark-primary mb-2">
-                  Processing Image
+                  {scanStatus === "scanning" ? "Scanning Document" : "Analyzing Carbon Footprint"}
                 </h3>
-                <p className="text-text-secondary dark:text-text-dark-secondary mb-4">Analyzing carbon footprint...</p>
-                <Progress value={75} className="h-2 bg-neutral-200 dark:bg-neutral-700" />
-                <p className="text-xs text-soft-accent mt-2">Using AI-powered OCR technology</p>
+                <p className="text-text-secondary dark:text-text-dark-secondary mb-4">
+                  {scanStatus === "scanning" ? "Capturing image..." : "Calculating CO₂ emissions..."}
+                </p>
+                <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
+                  <div className="bg-gradient-to-r from-soft-primary to-soft-accent h-2 rounded-full animate-pulse w-3/4"></div>
+                </div>
               </CardContent>
             </Card>
           </div>
         )}
 
-        {/* Scan Results */}
-        {scanResult && (
-          <div className="p-4 space-y-4">
-            <Card className={`border-2 ${getTypeBg(scanResult.type)} shadow-soft-lg`}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    {(() => {
-                      const IconComponent = getTypeIcon(scanResult.type)
-                      return <IconComponent className={`w-6 h-6 ${getTypeColor(scanResult.type)}`} />
-                    })()}
-                    <div>
-                      <CardTitle className="text-lg text-text-primary dark:text-text-dark-primary capitalize">
-                        {scanResult.type} Detected
-                      </CardTitle>
-                      <p className="text-sm text-text-secondary dark:text-text-dark-secondary">
-                        {scanResult.details.merchant}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge className="bg-soft-success/20 text-soft-success border-soft-success/30">
-                    <Check className="w-3 h-3 mr-1" />
-                    Verified
+        {scanStatus === "complete" && scannedData && (
+          <Card className="bg-white/80 dark:bg-bg-dark-secondary/80 backdrop-blur-sm border-neutral-200 dark:border-neutral-700 shadow-soft-lg">
+            <CardHeader>
+              <CardTitle className="text-lg text-text-primary dark:text-text-dark-primary flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-soft-success" />
+                Scan Complete!
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-text-secondary dark:text-text-dark-secondary text-sm">Document Type</span>
+                  <Badge className="bg-soft-primary/20 text-soft-primary border-soft-primary/30 capitalize">
+                    {scannedData.type}
                   </Badge>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Transaction Details */}
-                <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-text-secondary dark:text-text-dark-secondary">Amount</p>
-                      <p className="text-text-primary dark:text-text-dark-primary font-semibold">
-                        ${scanResult.amount}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-text-secondary dark:text-text-dark-secondary">Date</p>
-                      <p className="text-text-primary dark:text-text-dark-primary font-semibold">
-                        {scanResult.details.date}
-                      </p>
-                    </div>
-                    {scanResult.details.distance && (
-                      <div>
-                        <p className="text-text-secondary dark:text-text-dark-secondary">Distance</p>
-                        <p className="text-text-primary dark:text-text-dark-primary font-semibold">
-                          {scanResult.details.distance} km
-                        </p>
-                      </div>
-                    )}
-                    {scanResult.details.flightRoute && (
-                      <div>
-                        <p className="text-text-secondary dark:text-text-dark-secondary">Route</p>
-                        <p className="text-text-primary dark:text-text-dark-primary font-semibold">
-                          {scanResult.details.flightRoute}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-text-secondary dark:text-text-dark-secondary text-sm">Estimated CO₂</span>
+                  <span className="font-bold text-lg text-text-primary dark:text-text-dark-primary">
+                    {scannedData.total_co2_kg.toFixed(1)} kg
+                  </span>
                 </div>
+              </div>
 
-                {/* Carbon Footprint */}
-                <div className="bg-gradient-to-r from-soft-success/10 to-soft-primary/10 rounded-lg p-4 border border-soft-success/20 relative">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <Leaf className="w-5 h-5 text-soft-success" />
-                      <span className="text-text-primary dark:text-text-dark-primary font-semibold">
-                        Carbon Footprint
+              <div>
+                <h4 className="font-semibold text-text-primary dark:text-text-dark-primary mb-2">Breakdown</h4>
+                <div className="space-y-2">
+                  {scannedData.items.map((item: any, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 bg-soft-success/10 rounded-lg border border-soft-success/20"
+                    >
+                      <span className="text-sm text-text-primary dark:text-text-dark-primary font-medium">
+                        {item.name}
                       </span>
-                      <EcoBadge variant="carbon-neutral" size="sm" />
+                      <span className="text-sm text-text-secondary dark:text-text-dark-secondary">
+                        {item.co2_kg.toFixed(1)} kg CO₂
+                      </span>
                     </div>
-                    <span className="text-2xl font-bold text-soft-success">{scanResult.carbonFootprint} kg CO₂</span>
-                  </div>
-                  <p className="text-sm text-text-secondary dark:text-text-dark-secondary">
-                    This activity generated approximately {scanResult.carbonFootprint} kg of CO₂ emissions
-                  </p>
+                  ))}
                 </div>
+              </div>
 
-                {/* Items/Details */}
-                {scanResult.details.items && (
-                  <div>
-                    <p className="text-text-primary dark:text-text-dark-primary font-semibold mb-2">Items Detected:</p>
-                    <div className="space-y-1">
-                      {scanResult.details.items.map((item, index) => (
-                        <div key={index} className="flex items-center space-x-2 text-sm">
-                          <div className="w-2 h-2 bg-soft-success rounded-full"></div>
-                          <span className="text-text-secondary dark:text-text-dark-secondary">{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Offset Actions */}
-                <div className="flex space-x-3 pt-4">
-                  <Button
-                    onClick={handleOffset}
-                    className="flex-1 bg-gradient-to-r from-soft-success to-soft-primary hover:from-soft-success/90 hover:to-soft-primary/90 text-white font-medium shadow-soft"
-                  >
-                    <Zap className="w-4 h-4 mr-2" />
-                    Offset {scanResult.carbonFootprint} kg CO₂
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setScanResult(null)}
-                    className="border-neutral-300 dark:border-neutral-600 text-text-secondary dark:text-text-dark-secondary hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              <div className="flex space-x-3 pt-4">
+                <Button
+                  onClick={handleOffset}
+                  className="flex-1 bg-gradient-to-r from-soft-success to-soft-primary hover:from-soft-success/90 hover:to-soft-primary/90 text-white font-medium shadow-soft"
+                >
+                  <Leaf className="w-4 h-4 mr-2" />
+                  Offset Carbon
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={resetScanner}
+                  className="border-neutral-300 dark:border-neutral-600 text-text-secondary dark:text-text-dark-secondary hover:bg-neutral-100 dark:hover:bg-neutral-800 bg-transparent"
+                >
+                  <Scan className="w-4 h-4" />
+                  Scan Again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
