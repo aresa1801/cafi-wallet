@@ -1,24 +1,25 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
+import type React from "react"
+
 import { ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { CarbonFiLogo } from "./carbonfi-logo"
 import { ThemeToggle } from "./theme-toggle"
 import { SustainabilityOrnaments } from "./sustainability-ornaments"
-import { EcoBadge, type EcoBadgeVariant } from "./eco-badge"
-import type React from "react"
+import { EcoBadge } from "./eco-badge"
 
 interface PageHeaderProps {
   title: string
   subtitle?: string
   onBack?: () => void
-  badge?: EcoBadgeVariant
+  badge?: "eco-friendly" | "carbon-neutral" | "sustainable" | "green-energy"
   rightContent?: React.ReactNode
 }
 
 export function PageHeader({ title, subtitle, onBack, badge, rightContent }: PageHeaderProps) {
   return (
-    <div className="bg-white/80 dark:bg-bg-dark-secondary/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700 p-4 sticky top-0 z-40 shadow-soft relative">
+    <div className="bg-white/80 dark:bg-bg-dark-secondary/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700 p-4 shadow-soft relative">
       <SustainabilityOrnaments variant="floating" />
       <div className="flex items-center justify-between relative z-10">
         <div className="flex items-center space-x-3">
@@ -32,13 +33,15 @@ export function PageHeader({ title, subtitle, onBack, badge, rightContent }: Pag
               <ArrowLeft className="w-5 h-5" />
             </Button>
           )}
-          <CarbonFiLogo variant="icon" size="md" />
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-soft">
+            <CarbonFiLogo variant="icon" size="sm" />
+          </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-bold text-lg text-text-primary dark:text-text-dark-primary">{title}</h1>
               {badge && <EcoBadge variant={badge} size="sm" />}
             </div>
-            {subtitle && <p className="text-xs text-text-secondary dark:text-text-dark-secondary">{subtitle}</p>}
+            {subtitle && <p className="text-sm text-text-secondary dark:text-text-dark-secondary">{subtitle}</p>}
           </div>
         </div>
         <div className="flex items-center space-x-2">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -24,6 +24,7 @@ import {
   ArrowDownLeft,
   History,
   Wifi,
+  RefreshCw,
 } from "lucide-react"
 import { MobileChainSelector } from "./mobile-chain-selector"
 import { DAOGovernance } from "./dao-governance"
@@ -34,8 +35,9 @@ import { GreenParticles } from "./green-particles"
 import { EcoBadge } from "./eco-badge"
 import { WalletConnectButton } from "./wallet-connect-button"
 import { PageHeader } from "./page-header"
+import { Web3RequestModal } from "./web3-request-modal"
 import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
-import { QRWalletScanner } from "./qr-wallet-scanner" // Import QRWalletScanner
+import { QRWalletScanner } from "./qr-wallet-scanner"
 
 const CAFI_CONTRACT_ADDRESS = "0xa5359E55423E47Afe93D86b1bdaD827f1C1c16EB"
 
@@ -51,15 +53,16 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
   const [selectedChain, setSelectedChain] = useState<"arbitrum" | "base" | "polygon">("arbitrum")
   const [carbonOffset, setCarbonOffset] = useState(12.5)
   const [carbonGoal] = useState(50)
+  const [showRequestModal, setShowRequestModal] = useState(false)
 
-  const { isConnected, connectedDapp, pendingRequest, approveRequest, rejectRequest } = useCarbonFiWeb3()
+  const { isConnected, connectedDapp, pendingRequest, balance, chainId, switchChain, getBalance } = useCarbonFiWeb3()
 
   // Update the portfolioData object to include ETH, BASE, POLYGON, and CAFI assets
   const portfolioData = {
     arbitrum: {
-      balance: "2.45",
+      balance: chainId === 42161 ? balance : "2.45",
       symbol: "ETH",
-      usd: "6,125.50",
+      usd: chainId === 42161 ? (Number.parseFloat(balance) * 2500).toFixed(2) : "6,125.50",
       cafi: "1,250.00",
       change: "+12.5%",
       chainColor: "text-blue-500",
@@ -67,9 +70,9 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
       chainBorder: "border-blue-500/20",
     },
     base: {
-      balance: "3.78",
+      balance: chainId === 8453 ? balance : "3.78",
       symbol: "ETH",
-      usd: "9,450.00",
+      usd: chainId === 8453 ? (Number.parseFloat(balance) * 2500).toFixed(2) : "9,450.00",
       cafi: "850.00",
       change: "+8.3%",
       chainColor: "text-indigo-500",
@@ -77,9 +80,9 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
       chainBorder: "border-indigo-500/20",
     },
     polygon: {
-      balance: "15,420.67",
+      balance: chainId === 137 ? balance : "15,420.67",
       symbol: "MATIC",
-      usd: "12,336.54",
+      usd: chainId === 137 ? (Number.parseFloat(balance) * 0.8).toFixed(2) : "12,336.54",
       cafi: "2,100.00",
       change: "+15.7%",
       chainColor: "text-purple-500",
@@ -91,10 +94,47 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
   const currentPortfolio = portfolioData[selectedChain]
   const totalCafi = Object.values(portfolioData).reduce((sum, data) => sum + Number.parseFloat(data.cafi), 0)
 
+  // Handle chain switching
+  const handleChainChange = async (newChain: "arbitrum" | "base" | "polygon") => {
+    setSelectedChain(newChain)
+
+    if (isConnected) {
+      const chainIds = {
+        arbitrum: 42161,
+        base: 8453,
+        polygon: 137,
+      }
+
+      try {
+        await switchChain(chainIds[newChain])
+      } catch (error) {
+        console.error("Failed to switch chain:", error)
+      }
+    }
+  }
+
+  // Handle balance refresh
+  const handleRefreshBalance = async () => {
+    if (isConnected) {
+      try {
+        await getBalance()
+      } catch (error) {
+        console.error("Failed to refresh balance:", error)
+      }
+    }
+  }
+
   const handleOffsetComplete = (amount: number, type: string) => {
     setCarbonOffset((prev) => prev + amount / 1000)
     console.log(`Offset completed: ${amount} kg CO₂ from ${type}`)
   }
+
+  // Show request modal when there's a pending request
+  useEffect(() => {
+    if (pendingRequest) {
+      setShowRequestModal(true)
+    }
+  }, [pendingRequest])
 
   const recentTransactions = [
     {
@@ -174,6 +214,14 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-soft-success font-medium">{currentPortfolio.change}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRefreshBalance}
+                      className="text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary hover:bg-neutral-100 dark:hover:bg-neutral-800 p-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -487,8 +535,6 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
           <QRWalletScanner
             onClose={() => setActiveTab("home")}
             onWalletConnect={(data) => {
-              // This is where the QR scanner would initiate a connection to the Web3 provider
-              // For now, we'll just log it and go back home.
               console.log("QR Scanner connected:", data)
               setActiveTab("home")
             }}
@@ -516,7 +562,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
         badge="carbon-neutral"
         rightContent={
           <>
-            <MobileChainSelector selectedChain={selectedChain} onChainChange={setSelectedChain} />
+            <MobileChainSelector selectedChain={selectedChain} onChainChange={handleChainChange} />
             <WalletConnectButton />
             <Button
               variant="ghost"
@@ -568,6 +614,9 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
           })}
         </div>
       </div>
+
+      {/* Web3 Request Modal */}
+      <Web3RequestModal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} />
     </div>
   )
 }

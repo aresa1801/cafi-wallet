@@ -2,45 +2,64 @@
 
 import { useState, useEffect } from "react"
 import { SplashScreen } from "@/components/splash-screen"
+import { LoginScreen } from "@/components/login-screen"
 import { MobileLoginScreen } from "@/components/mobile-login-screen"
 import { MobileWalletDashboard } from "@/components/mobile-wallet-dashboard"
+import { detectWallets } from "@/utils/wallet-detection"
 import { CarbonFiWeb3Provider } from "@/providers/carbonfi-web3-provider"
 
-export default function CarbonFiWallet() {
-  const [showSplash, setShowSplash] = useState(true)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [walletType, setWalletType] = useState<"smart" | "self-custody" | null>(null)
+export default function Home() {
+  const [currentScreen, setCurrentScreen] = useState<"splash" | "login" | "mobile-login" | "dashboard">("splash")
   const [walletInfo, setWalletInfo] = useState<any>(null)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    // Detect if user is on mobile
+    // Check if mobile
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768 || /Android|webOS|iPhone|iPad|IEMobile|Opera Mini/i.test(navigator.userAgent))
+      setIsMobile(window.innerWidth < 768)
     }
 
     checkMobile()
     window.addEventListener("resize", checkMobile)
+
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  const handleLogin = (type: "smart" | "self-custody", info?: any) => {
-    setWalletType(type)
-    setWalletInfo(info)
-    setIsLoggedIn(true)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentScreen(isMobile ? "mobile-login" : "login")
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [isMobile])
+
+  const handleWalletConnect = (wallet: any) => {
+    setWalletInfo(wallet)
+    setCurrentScreen("dashboard")
   }
 
-  if (showSplash) {
-    return <SplashScreen onComplete={() => setShowSplash(false)} />
+  const handleAutoDetect = async () => {
+    const detectedWallets = await detectWallets()
+    if (detectedWallets.length > 0) {
+      handleWalletConnect(detectedWallets[0])
+    }
   }
 
-  if (!isLoggedIn) {
-    return <MobileLoginScreen onLogin={handleLogin} />
+  if (currentScreen === "splash") {
+    return <SplashScreen />
+  }
+
+  if (currentScreen === "login") {
+    return <LoginScreen onWalletConnect={handleWalletConnect} onAutoDetect={handleAutoDetect} />
+  }
+
+  if (currentScreen === "mobile-login") {
+    return <MobileLoginScreen onWalletConnect={handleWalletConnect} onAutoDetect={handleAutoDetect} />
   }
 
   return (
     <CarbonFiWeb3Provider>
-      <MobileWalletDashboard walletType={walletType!} walletInfo={walletInfo} />
+      <MobileWalletDashboard walletType={walletInfo?.type || "smart"} walletInfo={walletInfo} />
     </CarbonFiWeb3Provider>
   )
 }
