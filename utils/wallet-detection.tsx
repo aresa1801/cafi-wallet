@@ -11,11 +11,25 @@ export interface DetectedWallet {
   downloadUrl?: string
 }
 
+export interface MobileWallet {
+  name: string
+  id: string
+  icon: string
+  deepLink: string
+  downloadUrl: string
+  isInstalled: boolean
+  type: "mobile"
+}
+
 export const detectWallets = async (): Promise<DetectedWallet[]> => {
   const wallets: DetectedWallet[] = []
 
+  if (typeof window === "undefined") {
+    return wallets
+  }
+
   // Check for MetaMask
-  if (typeof window !== "undefined" && (window as any).ethereum?.isMetaMask) {
+  if ((window as any).ethereum?.isMetaMask) {
     wallets.push({
       name: "MetaMask",
       id: "metamask",
@@ -27,7 +41,7 @@ export const detectWallets = async (): Promise<DetectedWallet[]> => {
   }
 
   // Check for Coinbase Wallet
-  if (typeof window !== "undefined" && (window as any).ethereum?.isCoinbaseWallet) {
+  if ((window as any).ethereum?.isCoinbaseWallet) {
     wallets.push({
       name: "Coinbase Wallet",
       id: "coinbase",
@@ -39,7 +53,7 @@ export const detectWallets = async (): Promise<DetectedWallet[]> => {
   }
 
   // Check for Trust Wallet
-  if (typeof window !== "undefined" && (window as any).ethereum?.isTrust) {
+  if ((window as any).ethereum?.isTrust) {
     wallets.push({
       name: "Trust Wallet",
       id: "trust",
@@ -53,20 +67,16 @@ export const detectWallets = async (): Promise<DetectedWallet[]> => {
   // Add mobile wallet options if no injected wallets found
   if (wallets.length === 0) {
     const mobileWallets = detectMobileWallets()
-    wallets.push(...mobileWallets)
+    wallets.push(
+      ...mobileWallets.map((wallet) => ({
+        ...wallet,
+        type: "mobile" as const,
+        provider: undefined,
+      })),
+    )
   }
 
   return wallets
-}
-
-export interface MobileWallet {
-  name: string
-  id: string
-  icon: string
-  deepLink: string
-  downloadUrl: string
-  isInstalled: boolean
-  type: "mobile"
 }
 
 export const detectMobileWallets = (): MobileWallet[] => {
@@ -150,7 +160,7 @@ export const detectMobileWallets = (): MobileWallet[] => {
   return wallets
 }
 
-export const connectToMobileWallet = async (wallet: MobileWallet) => {
+export const connectToMobileWallet = async (wallet: MobileWallet): Promise<boolean> => {
   if (wallet.isInstalled) {
     try {
       // Connect to installed wallet

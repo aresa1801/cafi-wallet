@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { Leaf } from "lucide-react"
 
 interface CarbonFiLogoProps {
   variant?: "icon" | "full" | "text"
@@ -55,27 +56,10 @@ export function CarbonFiLogo({ variant = "icon", size = "md", className, showGlo
   // Default icon variant
   return (
     <div className={containerClasses}>
-      <div
-        className={cn(
-          "rounded-full overflow-hidden bg-white/10 backdrop-blur-sm flex items-center justify-center",
-          sizeClasses[size],
-        )}
-      >
-        <img
-          src="/images/carbonfi-logo.png"
-          alt="CarbonFi"
-          className={cn(
-            "object-contain",
-            size === "sm" && "w-4 h-4",
-            size === "md" && "w-6 h-6",
-            size === "lg" && "w-8 h-8",
-            size === "xl" && "w-10 h-10",
-          )}
-        />
+      <div className="w-full h-full bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg">
+        <Leaf className="w-1/2 h-1/2 text-white" />
       </div>
-      {showGlow && (
-        <div className="absolute inset-0 bg-gradient-to-br from-carbon-primary/30 to-carbon-accent/30 rounded-full blur-lg -z-10"></div>
-      )}
+      <div className="absolute inset-0 bg-gradient-to-br from-green-400/50 to-emerald-500/50 rounded-lg blur-sm"></div>
     </div>
   )
 }

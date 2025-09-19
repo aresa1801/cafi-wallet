@@ -1,7 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { ethers } from "ethers"
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
 
 export interface Web3Request {
   id: string
@@ -17,10 +16,6 @@ export interface CarbonFiWeb3ContextType {
   accounts: string[]
   chainId: string
   balance: string
-
-  // Web3 provider
-  provider: ethers.BrowserProvider | null
-  signer: ethers.JsonRpcSigner | null
 
   // Pending requests
   pendingRequests: Web3Request[]
@@ -85,18 +80,11 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
   const [accounts, setAccounts] = useState<string[]>([])
   const [chainId, setChainId] = useState("0x1")
   const [balance, setBalance] = useState("0")
-  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null)
-  const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null)
   const [pendingRequests, setPendingRequests] = useState<Web3Request[]>([])
   const [connectedDApp, setConnectedDApp] = useState<string | null>(null)
 
-  // Initialize Web3 provider
-  useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).ethereum) {
-      const web3Provider = new ethers.BrowserProvider((window as any).ethereum)
-      setProvider(web3Provider)
-    }
-  }, [])
+  // Mock wallet address for demo
+  const MOCK_ADDRESS = "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6"
 
   // Setup window.ethereum object for dApp compatibility
   useEffect(() => {
@@ -151,7 +139,9 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
               throw new Error("Invalid typed data")
 
             case "eth_getBalance":
-              return ethers.parseEther(balance).toString()
+              // Return balance in wei (hex format)
+              const balanceWei = Math.floor(Number.parseFloat(balance) * 1e18)
+              return "0x" + balanceWei.toString(16)
 
             default:
               throw new Error(`Method ${method} not supported`)
@@ -186,60 +176,47 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
     }
   }, [isConnected, accounts, chainId, balance])
 
-  const connect = async () => {
+  const connect = useCallback(async () => {
     try {
-      if (provider) {
-        const signerInstance = await provider.getSigner()
-        const address = await signerInstance.getAddress()
+      // Mock connection for demo
+      setAccounts([MOCK_ADDRESS])
+      setIsConnected(true)
+      setBalance("1.5")
 
-        setAccounts([address])
-        setSigner(signerInstance)
-        setIsConnected(true)
-
-        // Get balance
-        const balanceWei = await provider.getBalance(address)
-        setBalance(ethers.formatEther(balanceWei))
-
-        // Emit events
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("accountsChanged", { detail: [address] }))
-        }
-      } else {
-        // Mock connection for demo
-        const mockAddress = "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6"
-        setAccounts([mockAddress])
-        setIsConnected(true)
-        setBalance("1.5")
-
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("accountsChanged", { detail: [mockAddress] }))
-        }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("accountsChanged", { detail: [MOCK_ADDRESS] }))
       }
     } catch (error) {
       console.error("Connection failed:", error)
       throw error
     }
-  }
+  }, [])
 
-  const disconnect = () => {
+  const disconnect = useCallback(() => {
     setIsConnected(false)
     setAccounts([])
-    setSigner(null)
     setBalance("0")
     setConnectedDApp(null)
 
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("accountsChanged", { detail: [] }))
     }
-  }
+  }, [])
 
-  const switchChain = async (newChainId: string) => {
+  const switchChain = useCallback(async (newChainId: string) => {
     try {
       if (SUPPORTED_CHAINS[newChainId as keyof typeof SUPPORTED_CHAINS]) {
         setChainId(newChainId)
 
-        // Refresh balance for new chain
-        await refreshBalance()
+        // Mock balance update for different chains
+        const mockBalances: { [key: string]: string } = {
+          "0x1": "1.5",
+          "0xa4b1": "2.3",
+          "0x2105": "0.8",
+          "0x89": "1250.0",
+          "0x38": "0.5",
+        }
+        setBalance(mockBalances[newChainId] || "0")
 
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("chainChanged", { detail: newChainId }))
@@ -251,80 +228,84 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
       console.error("Chain switch failed:", error)
       throw error
     }
-  }
+  }, [])
 
-  const sendTransaction = async (transaction: any): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const request: Web3Request = {
-        id: Date.now().toString(),
-        method: "eth_sendTransaction",
-        params: [transaction],
-        origin: connectedDApp || "Unknown dApp",
-        timestamp: Date.now(),
+  const sendTransaction = useCallback(
+    async (transaction: any): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const request: Web3Request = {
+          id: Date.now().toString(),
+          method: "eth_sendTransaction",
+          params: [transaction],
+          origin: connectedDApp || "Unknown dApp",
+          timestamp: Date.now(),
+        }
+
+        setPendingRequests((prev) => [...prev, request])
+
+        // Auto-resolve for demo (in real app, user would approve)
+        setTimeout(() => {
+          const mockTxHash = "0x" + Math.random().toString(16).substr(2, 64)
+          resolve(mockTxHash)
+          setPendingRequests((prev) => prev.filter((r) => r.id !== request.id))
+        }, 2000)
+      })
+    },
+    [connectedDApp],
+  )
+
+  const signMessage = useCallback(
+    async (message: string): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const request: Web3Request = {
+          id: Date.now().toString(),
+          method: "personal_sign",
+          params: [message],
+          origin: connectedDApp || "Unknown dApp",
+          timestamp: Date.now(),
+        }
+
+        setPendingRequests((prev) => [...prev, request])
+
+        // Auto-resolve for demo
+        setTimeout(() => {
+          const mockSignature = "0x" + Math.random().toString(16).substr(2, 130)
+          resolve(mockSignature)
+          setPendingRequests((prev) => prev.filter((r) => r.id !== request.id))
+        }, 2000)
+      })
+    },
+    [connectedDApp],
+  )
+
+  const approveRequest = useCallback(
+    async (requestId: string) => {
+      const request = pendingRequests.find((r) => r.id === requestId)
+      if (request) {
+        // Handle approval logic here
+        setPendingRequests((prev) => prev.filter((r) => r.id !== requestId))
       }
+    },
+    [pendingRequests],
+  )
 
-      setPendingRequests((prev) => [...prev, request])
-
-      // Auto-resolve for demo (in real app, user would approve)
-      setTimeout(() => {
-        const mockTxHash = "0x" + Math.random().toString(16).substr(2, 64)
-        resolve(mockTxHash)
-        setPendingRequests((prev) => prev.filter((r) => r.id !== request.id))
-      }, 2000)
-    })
-  }
-
-  const signMessage = async (message: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const request: Web3Request = {
-        id: Date.now().toString(),
-        method: "personal_sign",
-        params: [message],
-        origin: connectedDApp || "Unknown dApp",
-        timestamp: Date.now(),
-      }
-
-      setPendingRequests((prev) => [...prev, request])
-
-      // Auto-resolve for demo
-      setTimeout(() => {
-        const mockSignature = "0x" + Math.random().toString(16).substr(2, 130)
-        resolve(mockSignature)
-        setPendingRequests((prev) => prev.filter((r) => r.id !== request.id))
-      }, 2000)
-    })
-  }
-
-  const approveRequest = async (requestId: string) => {
-    const request = pendingRequests.find((r) => r.id === requestId)
-    if (request) {
-      // Handle approval logic here
-      setPendingRequests((prev) => prev.filter((r) => r.id !== requestId))
-    }
-  }
-
-  const rejectRequest = (requestId: string) => {
+  const rejectRequest = useCallback((requestId: string) => {
     setPendingRequests((prev) => prev.filter((r) => r.id !== requestId))
-  }
+  }, [])
 
-  const refreshBalance = async () => {
-    if (provider && accounts[0]) {
-      try {
-        const balanceWei = await provider.getBalance(accounts[0])
-        setBalance(ethers.formatEther(balanceWei))
-      } catch (error) {
-        console.error("Failed to refresh balance:", error)
-      }
-    }
-  }
+  const refreshBalance = useCallback(async () => {
+    // Mock balance refresh
+    const currentBalance = Number.parseFloat(balance)
+    const variation = (Math.random() - 0.5) * 0.1
+    const newBalance = Math.max(0, currentBalance + variation)
+    setBalance(newBalance.toFixed(4))
+  }, [balance])
 
   const value: CarbonFiWeb3ContextType = {
     isConnected,
     accounts,
     chainId,
     balance,
-    provider,
-    signer,
     pendingRequests,
     connect,
     disconnect,

@@ -1,40 +1,43 @@
 "use client"
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useState, useEffect } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AlertTriangle, Shield, Zap } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { AlertTriangle, Shield, Wallet, Clock, CheckCircle, XCircle } from "lucide-react"
 import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
 
 export function Web3RequestModal() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
   const { pendingRequests, approveRequest, rejectRequest } = useCarbonFiWeb3()
-  const [isOpen, setIsOpen] = useState(true)
 
   const currentRequest = pendingRequests[0]
 
-  if (!currentRequest) return null
+  useEffect(() => {
+    setIsOpen(!!currentRequest)
+  }, [currentRequest])
 
   const handleApprove = async () => {
-    await approveRequest(currentRequest.id)
-    setIsOpen(false)
+    if (!currentRequest) return
+
+    setIsProcessing(true)
+    try {
+      await approveRequest(currentRequest.id)
+    } catch (error) {
+      console.error("Failed to approve request:", error)
+    } finally {
+      setIsProcessing(false)
+      setIsOpen(false)
+    }
   }
 
   const handleReject = () => {
+    if (!currentRequest) return
+
     rejectRequest(currentRequest.id)
     setIsOpen(false)
-  }
-
-  const getRequestIcon = (method: string) => {
-    switch (method) {
-      case "eth_sendTransaction":
-        return <Zap className="h-5 w-5 text-orange-500" />
-      case "personal_sign":
-      case "eth_signTypedData_v4":
-        return <Shield className="h-5 w-5 text-blue-500" />
-      default:
-        return <AlertTriangle className="h-5 w-5 text-yellow-500" />
-    }
   }
 
   const getRequestTitle = (method: string) => {
@@ -50,70 +53,128 @@ export function Web3RequestModal() {
     }
   }
 
-  const getRequestDescription = (method: string, params: any[]) => {
+  const getRequestDescription = (method: string) => {
     switch (method) {
       case "eth_sendTransaction":
-        const tx = params[0]
-        return `Send ${tx.value ? `${Number.parseInt(tx.value, 16) / 1e18} ETH` : "transaction"} to ${tx.to}`
+        return "A dApp is requesting to send a transaction from your wallet."
       case "personal_sign":
-        return `Sign message: "${params[0]}"`
+        return "A dApp is requesting you to sign a message."
       case "eth_signTypedData_v4":
-        return "Sign structured data for this dApp"
+        return "A dApp is requesting you to sign structured data."
       default:
-        return `Execute ${method} with provided parameters`
+        return "A dApp is making a request to your wallet."
     }
   }
+
+  const getRequestIcon = (method: string) => {
+    switch (method) {
+      case "eth_sendTransaction":
+        return <Wallet className="h-6 w-6 text-blue-500" />
+      case "personal_sign":
+      case "eth_signTypedData_v4":
+        return <Shield className="h-6 w-6 text-green-500" />
+      default:
+        return <AlertTriangle className="h-6 w-6 text-yellow-500" />
+    }
+  }
+
+  if (!currentRequest) return null
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <div className="flex items-center gap-3 mb-2">
             {getRequestIcon(currentRequest.method)}
-            {getRequestTitle(currentRequest.method)}
-          </DialogTitle>
+            <div>
+              <DialogTitle>{getRequestTitle(currentRequest.method)}</DialogTitle>
+              <DialogDescription>{getRequestDescription(currentRequest.method)}</DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">From:</span>
-            <Badge variant="outline">{currentRequest.origin}</Badge>
-          </div>
-
-          <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <p className="text-sm">{getRequestDescription(currentRequest.method, currentRequest.params)}</p>
-          </div>
-
-          {currentRequest.method === "eth_sendTransaction" && (
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Gas Fee:</span>
-                <span>~$2.50</span>
+          {/* Request Details */}
+          <Card className="bg-gray-50 dark:bg-gray-800">
+            <CardContent className="p-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Origin</span>
+                <Badge variant="outline">{currentRequest.origin}</Badge>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Total:</span>
-                <span className="font-semibold">
-                  {currentRequest.params[0]?.value
-                    ? `${(Number.parseInt(currentRequest.params[0].value, 16) / 1e18).toFixed(4)} ETH`
-                    : "0 ETH"}
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Method</span>
+                <code className="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">{currentRequest.method}</code>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Time</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {new Date(currentRequest.timestamp).toLocaleTimeString()}
                 </span>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+
+          {/* Transaction Details (if applicable) */}
+          {currentRequest.method === "eth_sendTransaction" && currentRequest.params[0] && (
+            <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+              <CardContent className="p-4 space-y-2">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100">Transaction Details</h4>
+                <div className="space-y-1 text-sm">
+                  {currentRequest.params[0].to && (
+                    <div className="flex justify-between">
+                      <span className="text-blue-700 dark:text-blue-300">To:</span>
+                      <code className="text-blue-800 dark:text-blue-200 text-xs">{currentRequest.params[0].to}</code>
+                    </div>
+                  )}
+                  {currentRequest.params[0].value && (
+                    <div className="flex justify-between">
+                      <span className="text-blue-700 dark:text-blue-300">Value:</span>
+                      <span className="text-blue-800 dark:text-blue-200">
+                        {Number.parseInt(currentRequest.params[0].value, 16) / 1e18} ETH
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           )}
 
-          <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-            <AlertTriangle className="h-4 w-4 text-yellow-600" />
-            <p className="text-xs text-yellow-700 dark:text-yellow-300">
-              Only approve if you trust this dApp and understand the request.
-            </p>
-          </div>
+          {/* Security Warning */}
+          <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+            <CardContent className="p-4">
+              <div className="flex gap-3">
+                <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <h4 className="font-medium text-yellow-900 dark:text-yellow-100">Security Notice</h4>
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    Only approve requests from trusted dApps. CarbonFi will never ask for your private keys.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleReject} className="flex-1 bg-transparent">
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" onClick={handleReject} disabled={isProcessing} className="flex-1 bg-transparent">
+              <XCircle className="h-4 w-4 mr-2" />
               Reject
             </Button>
-            <Button onClick={handleApprove} className="flex-1 bg-green-600 hover:bg-green-700">
-              Approve
+            <Button onClick={handleApprove} disabled={isProcessing} className="flex-1 bg-green-600 hover:bg-green-700">
+              {isProcessing ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Processing...
+                </div>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Approve
+                </>
+              )}
             </Button>
           </div>
         </div>

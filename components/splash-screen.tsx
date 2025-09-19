@@ -1,7 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { CarbonFiLogo } from "./carbonfi-logo"
+import { CarbonFiLogo } from "@/components/carbonfi-logo"
+import { SustainabilityOrnaments } from "@/components/sustainability-ornaments"
+import { GreenParticles } from "@/components/green-particles"
 
 interface SplashScreenProps {
   onComplete: () => void
@@ -26,55 +28,27 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   }, [onComplete])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-bg via-dark-surface to-dark-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-carbon-primary/10 rounded-full blur-xl animate-float"></div>
-        <div
-          className="absolute top-3/4 right-1/4 w-24 h-24 bg-carbon-accent/10 rounded-full blur-xl animate-float"
-          style={{ animationDelay: "1s" }}
-        ></div>
-        <div
-          className="absolute bottom-1/4 left-1/3 w-20 h-20 bg-carbon-purple/10 rounded-full blur-xl animate-float"
-          style={{ animationDelay: "2s" }}
-        ></div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-gray-900 dark:via-green-900/20 dark:to-emerald-900/20 flex items-center justify-center relative overflow-hidden">
+      <SustainabilityOrnaments />
+      <GreenParticles count={20} />
 
-      <div className="text-center space-y-8 animate-fade-in relative z-10">
-        {/* Main Logo */}
-        <CarbonFiLogo variant="full" size="xl" showGlow className="mx-auto" />
-
-        {/* Tagline */}
-        <div className="space-y-2">
-          <p className="text-carbon-accent text-lg font-semibold">Decentralized Carbon Finance</p>
-          <p className="text-dark-muted text-sm">Building a sustainable future with Web3</p>
+      <div className="text-center relative z-10">
+        <div className="relative inline-block mb-8">
+          <CarbonFiLogo className="w-24 h-24 mx-auto animate-pulse" />
+          <div className="absolute inset-0 bg-green-400/30 rounded-full blur-2xl animate-ping"></div>
         </div>
 
-        {/* Loading Progress */}
-        <div className="w-64 mx-auto space-y-2">
-          <div className="w-full bg-dark-surface rounded-full h-2 overflow-hidden">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">CarbonFi</h1>
+        <p className="text-gray-600 dark:text-gray-300 mb-8">Sustainable Web3 Wallet</p>
+
+        <div className="w-64 mx-auto">
+          <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
             <div
-              className="h-full bg-gradient-to-r from-carbon-primary to-carbon-accent transition-all duration-300 ease-out rounded-full"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
-            />
+            ></div>
           </div>
-          <p className="text-xs text-dark-muted">Loading... {progress}%</p>
-        </div>
-
-        {/* Features Preview */}
-        <div className="grid grid-cols-3 gap-4 mt-8 max-w-md mx-auto">
-          <div className="text-center p-3 bg-carbon-primary/10 rounded-lg border border-carbon-primary/20">
-            <div className="text-2xl mb-1">🌱</div>
-            <p className="text-xs text-carbon-primary font-semibold">Carbon Offset</p>
-          </div>
-          <div className="text-center p-3 bg-carbon-accent/10 rounded-lg border border-carbon-accent/20">
-            <div className="text-2xl mb-1">🗳️</div>
-            <p className="text-xs text-carbon-accent font-semibold">DAO Governance</p>
-          </div>
-          <div className="text-center p-3 bg-carbon-purple/10 rounded-lg border border-carbon-purple/20">
-            <div className="text-2xl mb-1">📱</div>
-            <p className="text-xs text-carbon-purple font-semibold">OCR Scanner</p>
-          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading... {progress}%</p>
         </div>
       </div>
     </div>

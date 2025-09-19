@@ -1,65 +1,60 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
-import { Leaf, Sparkles } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Leaf, Recycle, Sun, Wind } from "lucide-react"
 
 interface EcoBadgeProps {
-  variant?: "carbon-neutral" | "eco-friendly" | "sustainable" | "green-energy"
+  variant?: "eco-friendly" | "carbon-neutral" | "sustainable" | "green-energy"
   size?: "sm" | "md" | "lg"
   className?: string
 }
 
-export function EcoBadge({ variant = "carbon-neutral", size = "md", className }: EcoBadgeProps) {
-  const variants = {
-    "carbon-neutral": {
-      icon: Leaf,
-      text: "Carbon Neutral",
-      colors: "bg-soft-success/20 text-soft-success border-soft-success/30",
-    },
-    "eco-friendly": {
-      icon: Sparkles,
-      text: "Eco Friendly",
-      colors: "bg-soft-primary/20 text-soft-primary border-soft-primary/30",
-    },
-    sustainable: {
-      icon: Leaf,
-      text: "Sustainable",
-      colors: "bg-emerald-500/20 text-emerald-600 border-emerald-500/30",
-    },
-    "green-energy": {
-      icon: Sparkles,
-      text: "Green Energy",
-      colors: "bg-soft-accent/20 text-soft-accent border-soft-accent/30",
-    },
+export function EcoBadge({ variant = "eco-friendly", size = "md", className = "" }: EcoBadgeProps) {
+  const getIcon = () => {
+    switch (variant) {
+      case "eco-friendly":
+        return <Leaf className="w-3 h-3" />
+      case "carbon-neutral":
+        return <Recycle className="w-3 h-3" />
+      case "sustainable":
+        return <Sun className="w-3 h-3" />
+      case "green-energy":
+        return <Wind className="w-3 h-3" />
+    }
   }
 
-  const config = variants[variant]
-  const IconComponent = config.icon
-
-  const sizeClasses = {
-    sm: "text-xs px-2 py-1",
-    md: "text-sm px-3 py-1.5",
-    lg: "text-base px-4 py-2",
+  const getLabel = () => {
+    switch (variant) {
+      case "eco-friendly":
+        return "Eco-Friendly"
+      case "carbon-neutral":
+        return "Carbon Neutral"
+      case "sustainable":
+        return "Sustainable"
+      case "green-energy":
+        return "Green Energy"
+    }
   }
 
-  const iconSizes = {
-    sm: "w-3 h-3",
-    md: "w-4 h-4",
-    lg: "w-5 h-5",
+  const getColors = () => {
+    switch (variant) {
+      case "eco-friendly":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+      case "carbon-neutral":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+      case "sustainable":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+      case "green-energy":
+        return "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200"
+    }
   }
+
+  const sizeClass = size === "sm" ? "text-xs px-2 py-1" : size === "lg" ? "text-sm px-3 py-2" : "text-xs px-2 py-1"
 
   return (
-    <Badge
-      className={cn(
-        "font-medium border transition-all duration-300 hover:scale-105",
-        config.colors,
-        sizeClasses[size],
-        className,
-      )}
-    >
-      <IconComponent className={cn("mr-1.5", iconSizes[size])} />
-      {config.text}
+    <Badge className={`${getColors()} ${sizeClass} ${className} flex items-center gap-1`}>
+      {getIcon()}
+      {getLabel()}
     </Badge>
   )
 }
