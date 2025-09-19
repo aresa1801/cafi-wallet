@@ -1,5 +1,64 @@
 "use client"
 
+export interface DetectedWallet {
+  name: string
+  id: string
+  icon: string
+  type: "injected" | "mobile" | "hardware"
+  provider?: any
+  isInstalled: boolean
+  deepLink?: string
+  downloadUrl?: string
+}
+
+export const detectWallets = async (): Promise<DetectedWallet[]> => {
+  const wallets: DetectedWallet[] = []
+
+  // Check for MetaMask
+  if (typeof window !== "undefined" && (window as any).ethereum?.isMetaMask) {
+    wallets.push({
+      name: "MetaMask",
+      id: "metamask",
+      icon: "🦊",
+      type: "injected",
+      provider: (window as any).ethereum,
+      isInstalled: true,
+    })
+  }
+
+  // Check for Coinbase Wallet
+  if (typeof window !== "undefined" && (window as any).ethereum?.isCoinbaseWallet) {
+    wallets.push({
+      name: "Coinbase Wallet",
+      id: "coinbase",
+      icon: "🔵",
+      type: "injected",
+      provider: (window as any).ethereum,
+      isInstalled: true,
+    })
+  }
+
+  // Check for Trust Wallet
+  if (typeof window !== "undefined" && (window as any).ethereum?.isTrust) {
+    wallets.push({
+      name: "Trust Wallet",
+      id: "trust",
+      icon: "🛡️",
+      type: "injected",
+      provider: (window as any).ethereum,
+      isInstalled: true,
+    })
+  }
+
+  // Add mobile wallet options if no injected wallets found
+  if (wallets.length === 0) {
+    const mobileWallets = detectMobileWallets()
+    wallets.push(...mobileWallets)
+  }
+
+  return wallets
+}
+
 export interface MobileWallet {
   name: string
   id: string
@@ -7,6 +66,7 @@ export interface MobileWallet {
   deepLink: string
   downloadUrl: string
   isInstalled: boolean
+  type: "mobile"
 }
 
 export const detectMobileWallets = (): MobileWallet[] => {
@@ -18,6 +78,7 @@ export const detectMobileWallets = (): MobileWallet[] => {
       deepLink: "metamask://",
       downloadUrl: "https://metamask.app.link/dapp/carbonfi.app",
       isInstalled: false,
+      type: "mobile",
     },
     {
       name: "Trust Wallet",
@@ -26,6 +87,7 @@ export const detectMobileWallets = (): MobileWallet[] => {
       deepLink: "trust://",
       downloadUrl: "https://link.trustwallet.com/open_url?coin_id=60&url=https://carbonfi.app",
       isInstalled: false,
+      type: "mobile",
     },
     {
       name: "Rainbow",
@@ -34,6 +96,7 @@ export const detectMobileWallets = (): MobileWallet[] => {
       deepLink: "rainbow://",
       downloadUrl: "https://rainbow.me/",
       isInstalled: false,
+      type: "mobile",
     },
     {
       name: "Coinbase Wallet",
@@ -42,6 +105,7 @@ export const detectMobileWallets = (): MobileWallet[] => {
       deepLink: "cbwallet://",
       downloadUrl: "https://wallet.coinbase.com/",
       isInstalled: false,
+      type: "mobile",
     },
     {
       name: "WalletConnect",
@@ -50,11 +114,14 @@ export const detectMobileWallets = (): MobileWallet[] => {
       deepLink: "wc://",
       downloadUrl: "https://walletconnect.com/",
       isInstalled: false,
+      type: "mobile",
     },
   ]
 
   // Check if running on mobile
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  const isMobile =
+    typeof window !== "undefined" &&
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 
   if (!isMobile) return wallets
 

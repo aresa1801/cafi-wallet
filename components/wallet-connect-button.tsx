@@ -3,61 +3,60 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { QrCode, Wifi, WifiOff } from "lucide-react"
-import { QRWalletScanner } from "./qr-wallet-scanner"
+import { Wifi, WifiOff, Loader2 } from "lucide-react"
 import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
 
-interface WalletConnectButtonProps {
-  className?: string
-}
+export function WalletConnectButton() {
+  const [isConnecting, setIsConnecting] = useState(false)
+  const { isConnected, accounts, connect, disconnect, connectedDApp } = useCarbonFiWeb3()
 
-export function WalletConnectButton({ className }: WalletConnectButtonProps) {
-  const [showScanner, setShowScanner] = useState(false)
-  const { isConnected, connectedDapp, disconnectDApp } = useCarbonFiWeb3()
-
-  const handleWalletConnect = (connectionData: any) => {
-    // This function is now primarily for closing the scanner,
-    // the actual connection is handled by the Web3 provider.
-    console.log("QR Scanner closed after connection attempt:", connectionData)
-    setShowScanner(false)
+  const handleConnect = async () => {
+    if (isConnected) {
+      disconnect()
+    } else {
+      setIsConnecting(true)
+      try {
+        await connect()
+      } catch (error) {
+        console.error("Connection failed:", error)
+      } finally {
+        setIsConnecting(false)
+      }
+    }
   }
 
-  const handleDisconnect = () => {
-    disconnectDApp() // Disconnect via the Web3 provider
+  const formatAddress = (address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
-  if (showScanner) {
-    return <QRWalletScanner onClose={() => setShowScanner(false)} onWalletConnect={handleWalletConnect} />
+  if (isConnecting) {
+    return (
+      <Button disabled className="gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        Connecting...
+      </Button>
+    )
+  }
+
+  if (isConnected) {
+    return (
+      <div className="flex items-center gap-2">
+        <Badge variant="default" className="gap-1">
+          <Wifi className="h-3 w-3" />
+          {accounts[0] ? formatAddress(accounts[0]) : "Connected"}
+        </Badge>
+        {connectedDApp && <Badge variant="outline">{connectedDApp}</Badge>}
+        <Button variant="outline" size="sm" onClick={handleConnect}>
+          Disconnect
+        </Button>
+      </div>
+    )
   }
 
   return (
-    <div className={className}>
-      {!isConnected ? (
-        <Button
-          onClick={() => setShowScanner(true)}
-          variant="outline"
-          size="sm"
-          className="flex items-center space-x-2 border-soft-primary/30 text-soft-primary hover:bg-soft-primary/10 hover:border-soft-primary/50 transition-all duration-300 shadow-soft"
-        >
-          <QrCode className="w-4 h-4" />
-          <span className="hidden sm:inline">Connect dApp</span>
-        </Button>
-      ) : (
-        <div className="flex items-center space-x-2">
-          <Badge className="bg-soft-success/20 text-soft-success border-soft-success/30 flex items-center space-x-1">
-            <Wifi className="w-3 h-3" />
-            <span className="text-xs">{connectedDapp}</span>
-          </Badge>
-          <Button
-            onClick={handleDisconnect}
-            variant="ghost"
-            size="sm"
-            className="text-text-tertiary dark:text-text-dark-tertiary hover:text-soft-error hover:bg-soft-error/10"
-          >
-            <WifiOff className="w-4 h-4" />
-          </Button>
-        </div>
-      )}
-    </div>
+    <Button onClick={handleConnect} className="gap-2 bg-green-600 hover:bg-green-700">
+      <WifiOff className="h-4 w-4" />
+      Connect Wallet
+    </Button>
   )
 }

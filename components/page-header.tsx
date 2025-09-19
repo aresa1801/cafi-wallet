@@ -2,52 +2,52 @@
 
 import type React from "react"
 
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Wifi, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { CarbonFiLogo } from "./carbonfi-logo"
-import { ThemeToggle } from "./theme-toggle"
-import { SustainabilityOrnaments } from "./sustainability-ornaments"
-import { EcoBadge } from "./eco-badge"
+import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
 
 interface PageHeaderProps {
   title: string
   subtitle?: string
   onBack?: () => void
-  badge?: "eco-friendly" | "carbon-neutral" | "sustainable" | "green-energy"
+  showLogo?: boolean
   rightContent?: React.ReactNode
 }
 
-export function PageHeader({ title, subtitle, onBack, badge, rightContent }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, onBack, showLogo = true, rightContent }: PageHeaderProps) {
+  const { isConnected, connectedDApp } = useCarbonFiWeb3()
+
   return (
-    <div className="bg-white/80 dark:bg-bg-dark-secondary/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700 p-4 shadow-soft relative">
-      <SustainabilityOrnaments variant="floating" />
-      <div className="flex items-center justify-between relative z-10">
-        <div className="flex items-center space-x-3">
-          {onBack && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="text-text-tertiary dark:text-text-dark-tertiary hover:text-text-primary dark:hover:text-text-dark-primary hover:bg-neutral-100 dark:hover:bg-neutral-800 p-2"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          )}
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-soft">
-            <CarbonFiLogo variant="icon" size="sm" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-bold text-lg text-text-primary dark:text-text-dark-primary">{title}</h1>
-              {badge && <EcoBadge variant={badge} size="sm" />}
+    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <div className="flex items-center gap-3">
+        {onBack && (
+          <Button variant="ghost" size="sm" onClick={onBack} className="p-2">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        )}
+
+        {showLogo && (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">CF</span>
             </div>
-            {subtitle && <p className="text-sm text-text-secondary dark:text-text-dark-secondary">{subtitle}</p>}
           </div>
+        )}
+
+        <div>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h1>
+          {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
         </div>
-        <div className="flex items-center space-x-2">
-          <ThemeToggle />
-          {rightContent}
+      </div>
+
+      <div className="flex items-center gap-2">
+        {/* Connection Status */}
+        <div className="flex items-center gap-1">
+          {isConnected ? <Wifi className="h-4 w-4 text-green-500" /> : <WifiOff className="h-4 w-4 text-gray-400" />}
+          {connectedDApp && <span className="text-xs text-green-600 dark:text-green-400">{connectedDApp}</span>}
         </div>
+
+        {rightContent}
       </div>
     </div>
   )
