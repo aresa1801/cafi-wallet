@@ -82,40 +82,40 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
         {step === "choose-action" && (
           <div className="space-y-4">
             <Card
-              className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30 hover:border-primary/60 transition-all cursor-pointer group"
+              className="bg-gradient-to-br from-emerald-500/25 via-emerald-500/15 to-emerald-500/10 dark:from-emerald-600/30 dark:via-emerald-600/20 dark:to-emerald-600/10 border border-emerald-500/40 dark:border-emerald-500/50 hover:border-emerald-500/70 dark:hover:border-emerald-400/70 transition-all cursor-pointer group backdrop-blur-sm"
               onClick={handleGenerateSeed}
             >
               <CardHeader>
-                <CardTitle className="flex items-center justify-between text-lg">
+                <CardTitle className="flex items-center justify-between text-lg text-foreground">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <RefreshCw className="w-5 h-5 text-primary" />
+                    <div className="w-10 h-10 bg-emerald-600/30 dark:bg-emerald-500/40 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <RefreshCw className="w-5 h-5 text-emerald-700 dark:text-emerald-300" />
                     </div>
-                    <span>Create New Wallet</span>
+                    <span className="text-foreground font-semibold">Create New Wallet</span>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">Generate a new 12-word seed phrase for your wallet</p>
+                <p className="text-sm text-foreground/80">Generate a new 12-word seed phrase for your wallet</p>
               </CardContent>
             </Card>
 
             <Card
-              className="bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/30 hover:border-secondary/60 transition-all cursor-pointer group"
+              className="bg-gradient-to-br from-teal-500/25 via-teal-500/15 to-teal-500/10 dark:from-teal-600/30 dark:via-teal-600/20 dark:to-teal-600/10 border border-teal-500/40 dark:border-teal-500/50 hover:border-teal-500/70 dark:hover:border-teal-400/70 transition-all cursor-pointer group backdrop-blur-sm"
               onClick={() => setStep("import-wallet")}
             >
               <CardHeader>
-                <CardTitle className="flex items-center justify-between text-lg">
+                <CardTitle className="flex items-center justify-between text-lg text-foreground">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-secondary/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Shield className="w-5 h-5 text-secondary" />
+                    <div className="w-10 h-10 bg-teal-600/30 dark:bg-teal-500/40 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Shield className="w-5 h-5 text-teal-700 dark:text-teal-300" />
                     </div>
-                    <span>Import Existing Wallet</span>
+                    <span className="text-foreground font-semibold">Import Existing Wallet</span>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-foreground/80">
                   Import a wallet using an existing seed phrase or private key
                 </p>
               </CardContent>

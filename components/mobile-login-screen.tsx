@@ -4,9 +4,9 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Shield, Leaf, Zap, Users, ArrowRight } from "lucide-react"
-import { CarbonFiLogo } from "@/components/carbonfi-logo"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { SustainabilityBackground } from "@/components/sustainability-background"
+import Image from "next/image"
 
 interface MobileLoginScreenProps {
   onLogin: (type: "smart" | "self-custody", info?: any) => void
@@ -56,7 +56,14 @@ export function MobileLoginScreen({ onLogin }: MobileLoginScreenProps) {
         {/* Logo and Title */}
         <div className="text-center mb-12 max-w-2xl">
           <div className="relative inline-block mb-8">
-            <CarbonFiLogo className="w-20 h-20 mx-auto" />
+            <Image
+              src="/images/carbonfi-icon.png"
+              alt="CarbonFi Logo"
+              width={31}
+              height={31}
+              className="mx-auto"
+              priority
+            />
             <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
           </div>
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { CarbonFiLogo } from "@/components/carbonfi-logo"
+import Image from "next/image"
 import { SustainabilityOrnaments } from "@/components/sustainability-ornaments"
 import { GreenParticles } from "@/components/green-particles"
 
@@ -34,7 +34,14 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
       <div className="text-center relative z-10">
         <div className="relative inline-block mb-8">
-          <CarbonFiLogo className="w-24 h-24 mx-auto animate-pulse" />
+          <Image
+            src="/images/carbonfi-icon.png"
+            alt="CarbonFi Logo"
+            width={38}
+            height={38}
+            className="mx-auto animate-pulse"
+            priority
+          />
           <div className="absolute inset-0 bg-green-400/30 rounded-full blur-2xl animate-ping"></div>
         </div>
 
