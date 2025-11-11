@@ -36,7 +36,7 @@ const chains = {
 
 export function MobileChainSelector({ selectedChain, onChainChange }: MobileChainSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const currentChain = chains[selectedChain]
+  const currentChain = chains[selectedChain] || chains.arbitrum
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
