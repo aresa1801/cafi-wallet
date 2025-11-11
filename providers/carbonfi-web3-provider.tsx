@@ -35,7 +35,7 @@ export interface CarbonFiWeb3ContextType {
   setConnectedDApp: (dapp: string | null) => void
 }
 
-const CarbonFiWeb3Context = createContext<CarbonFiWeb3ContextType | undefined>(undefined)
+export const CarbonFiWeb3Context = createContext<CarbonFiWeb3ContextType | undefined>(undefined)
 
 const SUPPORTED_CHAINS = {
   "0x1": {
