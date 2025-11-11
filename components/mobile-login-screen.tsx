@@ -3,12 +3,10 @@
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Shield, Leaf, Zap, Users } from "lucide-react"
+import { Shield, Leaf, Zap, Users, ArrowRight } from "lucide-react"
 import { CarbonFiLogo } from "@/components/carbonfi-logo"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { SustainabilityOrnaments } from "@/components/sustainability-ornaments"
-import { GreenParticles } from "@/components/green-particles"
-import { EcoBadge } from "@/components/eco-badge"
+import { SustainabilityBackground } from "@/components/sustainability-background"
 
 interface MobileLoginScreenProps {
   onLogin: (type: "smart" | "self-custody", info?: any) => void
@@ -35,62 +33,66 @@ export function MobileLoginScreen({ onLogin }: MobileLoginScreenProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-gray-900 dark:via-green-900/20 dark:to-emerald-900/20 relative overflow-hidden">
-      <SustainabilityOrnaments />
-      <GreenParticles />
+    <div className="min-h-screen relative overflow-hidden">
+      <SustainabilityBackground />
 
       {/* Header */}
-      <div className="relative z-10 flex justify-between items-center p-4">
-        <div className="flex items-center gap-2">
-          <EcoBadge variant="eco-friendly" />
-          <EcoBadge variant="carbon-neutral" />
+      <div className="relative z-10 flex justify-between items-center p-4 md:p-6">
+        <div className="flex items-center gap-3">
+          <Leaf className="w-5 h-5 text-primary" />
+          <span className="text-sm font-semibold text-muted-foreground">Eco-Certified</span>
         </div>
         <ThemeToggle />
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-80px)] p-4">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-80px)] p-4 md:p-6">
         {/* Logo and Title */}
-        <div className="text-center mb-8">
-          <div className="relative inline-block mb-6">
+        <div className="text-center mb-12 max-w-2xl">
+          <div className="relative inline-block mb-8">
             <CarbonFiLogo className="w-20 h-20 mx-auto" />
-            <div className="absolute inset-0 bg-green-400/20 rounded-full blur-xl animate-pulse"></div>
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome to CarbonFi</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">The sustainable Web3 wallet for a greener future</p>
-          <div className="flex justify-center gap-2">
-            <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-              <Leaf className="w-3 h-3 mr-1" />
+
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-3">
+            Welcome to <span className="text-primary">CarbonFi</span>
+          </h1>
+          <p className="text-lg text-muted-foreground mb-6">The sustainable Web3 wallet for a greener future</p>
+
+          <div className="flex justify-center gap-3 flex-wrap">
+            <Badge className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors">
+              <Leaf className="w-3 h-3 mr-2" />
               Carbon Neutral
             </Badge>
-            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-              <Shield className="w-3 h-3 mr-1" />
+            <Badge className="bg-secondary/10 text-secondary border border-secondary/20 hover:bg-secondary/20 transition-colors">
+              <Shield className="w-3 h-3 mr-2" />
               Secure
             </Badge>
           </div>
         </div>
 
         {/* Wallet Options */}
-        <div className="w-full max-w-md space-y-4">
+        <div className="w-full max-w-md space-y-4 mb-8">
           <Card
-            className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-green-200 dark:border-green-800 cursor-pointer hover:bg-white/90 dark:hover:bg-gray-800/90 transition-all duration-300 hover:scale-105"
+            className="bg-card/80 dark:bg-card/60 backdrop-blur-md border-primary/20 cursor-pointer transition-all duration-300 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10 group"
             onClick={() => handleWalletSelect("smart")}
           >
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-white" />
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Zap className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <span className="text-lg">Smart Wallet</span>
+                    <Badge className="ml-2 bg-primary/20 text-primary text-xs border-0">Recommended</Badge>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-lg">Smart Wallet</span>
-                  <Badge className="ml-2 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">
-                    Recommended
-                  </Badge>
-                </div>
+                <ArrowRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
                 Advanced features with social recovery and gas optimization
               </p>
               <div className="flex flex-wrap gap-2">
@@ -108,21 +110,22 @@ export function MobileLoginScreen({ onLogin }: MobileLoginScreenProps) {
           </Card>
 
           <Card
-            className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-green-200 dark:border-green-800 cursor-pointer hover:bg-white/90 dark:hover:bg-gray-800/90 transition-all duration-300 hover:scale-105"
+            className="bg-card/80 dark:bg-card/60 backdrop-blur-md border-secondary/20 cursor-pointer transition-all duration-300 hover:border-secondary/60 hover:shadow-lg hover:shadow-secondary/10 group"
             onClick={() => handleWalletSelect("self-custody")}
           >
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-white" />
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Shield className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <span className="text-lg">Self-Custody Wallet</span>
                 </div>
-                <span className="text-lg">Self-Custody Wallet</span>
+                <ArrowRight className="w-5 h-5 text-secondary opacity-0 group-hover:opacity-100 transition-opacity" />
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                Full control with traditional private key management
-              </p>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">Full control with traditional private key management</p>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className="text-xs">
                   Private Keys
@@ -139,22 +142,22 @@ export function MobileLoginScreen({ onLogin }: MobileLoginScreenProps) {
         </div>
 
         {/* Features */}
-        <div className="w-full max-w-md mt-8">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">Why Choose CarbonFi?</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Leaf className="w-6 h-6 text-green-600" />
+        <div className="w-full max-w-md">
+          <h3 className="text-lg font-semibold text-foreground mb-6 text-center">Why Choose CarbonFi?</h3>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="text-center group cursor-pointer">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-colors">
+                <Leaf className="w-6 h-6 text-primary" />
               </div>
-              <h4 className="font-medium text-gray-900 dark:text-white text-sm">Carbon Tracking</h4>
-              <p className="text-xs text-gray-600 dark:text-gray-300">Monitor your carbon footprint</p>
+              <h4 className="font-semibold text-foreground text-sm mb-1">Carbon Tracking</h4>
+              <p className="text-xs text-muted-foreground">Monitor your footprint</p>
             </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Users className="w-6 h-6 text-blue-600" />
+            <div className="text-center group cursor-pointer">
+              <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-secondary/20 transition-colors">
+                <Users className="w-6 h-6 text-secondary" />
               </div>
-              <h4 className="font-medium text-gray-900 dark:text-white text-sm">DAO Governance</h4>
-              <p className="text-xs text-gray-600 dark:text-gray-300">Participate in decisions</p>
+              <h4 className="font-semibold text-foreground text-sm mb-1">DAO Governance</h4>
+              <p className="text-xs text-muted-foreground">Participate in decisions</p>
             </div>
           </div>
         </div>
@@ -162,11 +165,11 @@ export function MobileLoginScreen({ onLogin }: MobileLoginScreenProps) {
         {/* Loading State */}
         {isConnecting && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card className="bg-white dark:bg-gray-800 p-6">
+            <Card className="bg-card p-8">
               <div className="text-center">
-                <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-900 dark:text-white font-medium">Connecting to CarbonFi...</p>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Setting up your sustainable wallet</p>
+                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-foreground font-medium">Connecting to CarbonFi...</p>
+                <p className="text-sm text-muted-foreground">Setting up your sustainable wallet</p>
               </div>
             </Card>
           </div>
