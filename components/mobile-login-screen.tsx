@@ -59,8 +59,8 @@ export function MobileLoginScreen({ onLogin }: MobileLoginScreenProps) {
             <Image
               src="/images/carbonfi-icon.png"
               alt="CarbonFi Logo"
-              width={31}
-              height={31}
+              width={155}
+              height={155}
               className="mx-auto"
               priority
             />
@@ -68,7 +68,7 @@ export function MobileLoginScreen({ onLogin }: MobileLoginScreenProps) {
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-3">
-            Welcome to <span className="text-primary">CarbonFi</span>
+            Welcome to <span className="text-white">CarbonFi</span>
           </h1>
           <p className="text-lg text-muted-foreground mb-6">The sustainable Web3 wallet for a greener future</p>
 

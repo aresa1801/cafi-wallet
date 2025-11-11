@@ -37,8 +37,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           <Image
             src="/images/carbonfi-icon.png"
             alt="CarbonFi Logo"
-            width={38}
-            height={38}
+            width={190}
+            height={190}
             className="mx-auto animate-pulse"
             priority
           />

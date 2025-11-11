@@ -82,42 +82,40 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
         {step === "choose-action" && (
           <div className="space-y-4">
             <Card
-              className="bg-gradient-to-br from-emerald-500/25 via-emerald-500/15 to-emerald-500/10 dark:from-emerald-600/30 dark:via-emerald-600/20 dark:to-emerald-600/10 border border-emerald-500/40 dark:border-emerald-500/50 hover:border-emerald-500/70 dark:hover:border-emerald-400/70 transition-all cursor-pointer group backdrop-blur-sm"
+              className="bg-gradient-to-br from-emerald-400/35 via-emerald-400/25 to-emerald-400/15 dark:from-emerald-500/40 dark:via-emerald-500/30 dark:to-emerald-500/15 border border-emerald-500/60 dark:border-emerald-400/60 hover:border-emerald-500/90 dark:hover:border-emerald-300/90 hover:shadow-lg hover:shadow-emerald-500/20 transition-all cursor-pointer group backdrop-blur-sm"
               onClick={handleGenerateSeed}
             >
               <CardHeader>
-                <CardTitle className="flex items-center justify-between text-lg text-foreground">
+                <CardTitle className="flex items-center justify-between text-lg text-white dark:text-white">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-600/30 dark:bg-emerald-500/40 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <RefreshCw className="w-5 h-5 text-emerald-700 dark:text-emerald-300" />
+                    <div className="w-10 h-10 bg-emerald-600/50 dark:bg-emerald-500/60 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <RefreshCw className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-foreground font-semibold">Create New Wallet</span>
+                    <span className="text-white font-semibold">Create New Wallet</span>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-foreground/80">Generate a new 12-word seed phrase for your wallet</p>
+                <p className="text-sm text-white/90">Generate a new 12-word seed phrase for your wallet</p>
               </CardContent>
             </Card>
 
             <Card
-              className="bg-gradient-to-br from-teal-500/25 via-teal-500/15 to-teal-500/10 dark:from-teal-600/30 dark:via-teal-600/20 dark:to-teal-600/10 border border-teal-500/40 dark:border-teal-500/50 hover:border-teal-500/70 dark:hover:border-teal-400/70 transition-all cursor-pointer group backdrop-blur-sm"
+              className="bg-gradient-to-br from-teal-400/35 via-teal-400/25 to-teal-400/15 dark:from-teal-500/40 dark:via-teal-500/30 dark:to-teal-500/15 border border-teal-500/60 dark:border-teal-400/60 hover:border-teal-500/90 dark:hover:border-teal-300/90 hover:shadow-lg hover:shadow-teal-500/20 transition-all cursor-pointer group backdrop-blur-sm"
               onClick={() => setStep("import-wallet")}
             >
               <CardHeader>
-                <CardTitle className="flex items-center justify-between text-lg text-foreground">
+                <CardTitle className="flex items-center justify-between text-lg text-white dark:text-white">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-teal-600/30 dark:bg-teal-500/40 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Shield className="w-5 h-5 text-teal-700 dark:text-teal-300" />
+                    <div className="w-10 h-10 bg-teal-600/50 dark:bg-teal-500/60 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Shield className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-foreground font-semibold">Import Existing Wallet</span>
+                    <span className="text-white font-semibold">Import Existing Wallet</span>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-foreground/80">
-                  Import a wallet using an existing seed phrase or private key
-                </p>
+                <p className="text-sm text-white/90">Import a wallet using an existing seed phrase or private key</p>
               </CardContent>
             </Card>
           </div>
@@ -125,44 +123,61 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
 
         {/* Generate Seed */}
         {step === "generate-seed" && !confirmedSeed && (
-          <Card className="border border-primary/30">
+          <Card className="border border-emerald-500/40 bg-white/95 dark:bg-slate-900/95">
             <CardHeader>
-              <CardTitle className="text-lg">Your Seed Phrase</CardTitle>
+              <CardTitle className="text-lg text-foreground">Your Seed Phrase</CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
                 Write down these 12 words in order. Keep them safe and never share them!
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <div className="bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-400/30 dark:border-emerald-500/40 rounded-lg p-4">
                 <div className="grid grid-cols-3 gap-3">
                   {seedPhrase.split(" ").map((word, i) => (
-                    <div key={i} className="bg-card/80 rounded border border-primary/10 p-2 text-center">
-                      <span className="text-xs text-muted-foreground block">{i + 1}</span>
-                      <span className={`font-mono text-sm ${showSeed ? "text-foreground" : "blur-sm"}`}>{word}</span>
+                    <div
+                      key={i}
+                      className="bg-white/80 dark:bg-slate-800/80 rounded border border-emerald-300/40 dark:border-emerald-600/40 p-2 text-center hover:border-emerald-400/60 dark:hover:border-emerald-400/60 transition-colors"
+                    >
+                      <span className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold block">
+                        {i + 1}
+                      </span>
+                      <span className={`font-mono text-sm text-foreground font-medium ${showSeed ? "" : "blur-sm"}`}>
+                        {word}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setShowSeed(!showSeed)} className="flex-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowSeed(!showSeed)}
+                  className="flex-1 bg-emerald-50/80 dark:bg-emerald-950/50 border-emerald-400/50 dark:border-emerald-500/50 text-foreground hover:bg-emerald-100/80 dark:hover:bg-emerald-900/70 hover:border-emerald-500/80 dark:hover:border-emerald-400/80 transition-all"
+                >
                   {showSeed ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
                   {showSeed ? "Hide" : "Show"}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => copyToClipboard(seedPhrase)} className="flex-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(seedPhrase)}
+                  className="flex-1 bg-teal-50/80 dark:bg-teal-950/50 border-teal-400/50 dark:border-teal-500/50 text-foreground hover:bg-teal-100/80 dark:hover:bg-teal-900/70 hover:border-teal-500/80 dark:hover:border-teal-400/80 transition-all"
+                >
                   <Copy className="w-4 h-4 mr-2" />
                   {copied ? "Copied!" : "Copy"}
                 </Button>
               </div>
 
-              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-                <p className="text-xs text-destructive/80">
+              <div className="bg-red-50/80 dark:bg-red-950/30 border border-red-300/40 dark:border-red-600/40 rounded-lg p-3">
+                <p className="text-xs text-red-700 dark:text-red-300/90">
                   <strong>Warning:</strong> Anyone with your seed phrase can access your funds. Store it securely
                   offline.
                 </p>
               </div>
 
-              <Button onClick={handleConfirmSeed} className="w-full">
+              <Button onClick={handleConfirmSeed} className="w-full bg-emerald-600 hover:bg-emerald-700">
                 I've Saved My Seed Phrase
               </Button>
             </CardContent>
@@ -177,7 +192,7 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
               <p className="text-sm text-muted-foreground mt-2">Select the words in the correct order to verify</p>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-2">
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                 <p className="text-sm text-muted-foreground">Your seed phrase (for reference):</p>
                 <div className="flex flex-wrap gap-2">
                   {seedPhrase.split(" ").map((word, i) => (
