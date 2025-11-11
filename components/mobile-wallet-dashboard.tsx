@@ -56,6 +56,12 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
     return chains[chainId] || "Unknown"
   }
 
+  const portfolioData = {
+    arbitrum: { balance: "1.25", symbol: "ETH", usd: "3,487.50", cafi: "2,500", change: "+5.2%" },
+    base: { balance: "0.85", symbol: "ETH", usd: "2,369.50", cafi: "1,800", change: "+3.1%" },
+    polygon: { balance: "50.00", symbol: "MATIC", usd: "22.50", cafi: "45", change: "-1.2%" },
+  }
+
   if (activeTab === "scanner") {
     return <QRWalletScanner onBack={() => setActiveTab("portfolio")} />
   }
@@ -174,7 +180,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
           </TabsList>
 
           <TabsContent value="portfolio" className="space-y-4">
-            <PortfolioStats />
+            <PortfolioStats portfolioData={portfolioData} />
 
             <div className="grid grid-cols-2 gap-4">
               <Card
