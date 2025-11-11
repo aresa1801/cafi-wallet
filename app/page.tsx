@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { SplashScreen } from "@/components/splash-screen"
 import { MobileLoginScreen } from "@/components/mobile-login-screen"
+import { SelfCustodySetup } from "@/components/self-custody-setup"
 import { MobileWalletDashboard } from "@/components/mobile-wallet-dashboard"
 import { CarbonFiWeb3Provider } from "@/providers/carbonfi-web3-provider"
 import { Web3RequestModal } from "@/components/web3-request-modal"
@@ -13,6 +14,7 @@ export default function CarbonFiWallet() {
   const [walletType, setWalletType] = useState<"smart" | "self-custody" | null>(null)
   const [walletInfo, setWalletInfo] = useState<any>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [showSetup, setShowSetup] = useState(false)
 
   useEffect(() => {
     // Detect if user is on mobile
@@ -27,12 +29,31 @@ export default function CarbonFiWallet() {
 
   const handleLogin = (type: "smart" | "self-custody", info?: any) => {
     setWalletType(type)
+    if (type === "self-custody" && info?.setupRequired) {
+      setShowSetup(true)
+    } else {
+      setWalletInfo(info)
+      setIsLoggedIn(true)
+    }
+  }
+
+  const handleSetupComplete = (info: any) => {
     setWalletInfo(info)
     setIsLoggedIn(true)
+    setShowSetup(false)
+  }
+
+  const handleBackFromSetup = () => {
+    setShowSetup(false)
+    setWalletType(null)
   }
 
   if (showSplash) {
     return <SplashScreen onComplete={() => setShowSplash(false)} />
+  }
+
+  if (showSetup) {
+    return <SelfCustodySetup onComplete={handleSetupComplete} onBack={handleBackFromSetup} />
   }
 
   if (!isLoggedIn) {

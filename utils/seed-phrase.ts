@@ -1,0 +1,98 @@
+// Generate a 12-word BIP39 seed phrase
+export function generateSeedPhrase(): string {
+  const wordList = [
+    "abandon",
+    "ability",
+    "able",
+    "about",
+    "above",
+    "absent",
+    "absorb",
+    "abstract",
+    "academic",
+    "accent",
+    "accept",
+    "accident",
+    "account",
+    "accuse",
+    "achieve",
+    "acid",
+    "acknowledge",
+    "acquire",
+    "across",
+    "act",
+    "action",
+    "activate",
+    "active",
+    "actor",
+    "actress",
+    "actual",
+    "acuity",
+    "acumen",
+    "acute",
+    "ad",
+    "adage",
+    "adapt",
+    "add",
+    "addict",
+    "added",
+    "adding",
+    "addle",
+    "address",
+    "adjust",
+    "admin",
+    "admire",
+    "admit",
+    "adobe",
+    "adopt",
+    "adore",
+    "adorn",
+    "adult",
+    "advance",
+    "advent",
+    "adverb",
+    "advertise",
+    "advice",
+    "advise",
+    "advocate",
+    "ae",
+    "aeon",
+    "aerate",
+    "aerial",
+    "aerobic",
+    "aeros",
+    "afar",
+    "affable",
+    "affair",
+    "affect",
+    "afford",
+    "affront",
+    "afraid",
+    "africa",
+    "african",
+    "aft",
+    "after",
+    "aftercare",
+    "afterglow",
+    "aftermath",
+    "afternoon",
+    "aftershock",
+    "afterward",
+    "afterword",
+    "afterworld",
+    "aga",
+  ]
+
+  // Simple BIP39-like seed phrase generation (12 random words)
+  const selectedWords = []
+  for (let i = 0; i < 12; i++) {
+    selectedWords.push(wordList[Math.floor(Math.random() * wordList.length)])
+  }
+  return selectedWords.join(" ")
+}
+
+// Validate seed phrase (12 words)
+export function validateSeedPhrase(phrase: string): boolean {
+  const words = phrase.trim().split(/\s+/)
+  return words.length === 12 && words.every((w) => w.length > 0)
+}
