@@ -10,58 +10,58 @@
 
 @layer base {
   :root {
-    /* Sustainability-focused green theme */
-    --background: 132 100% 98%;
-    --foreground: 120 30% 15%;
+    /* Sustainability-focused green theme — CarbonFi dominant green */
+    --background: 135 60% 97%;
+    --foreground: 150 35% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 120 30% 15%;
+    --card-foreground: 150 35% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 120 30% 15%;
-    --primary: 132 61% 42%;
+    --popover-foreground: 150 35% 12%;
+    --primary: 145 65% 30%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 166 75% 35%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 120 20% 85%;
-    --muted-foreground: 120 15% 40%;
-    --accent: 142 71% 45%;
+    --secondary: 160 75% 95%;
+    --secondary-foreground: 150 60% 20%;
+    --muted: 145 25% 88%;
+    --muted-foreground: 150 20% 38%;
+    --accent: 140 70% 38%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 120 30% 90%;
-    --input: 120 30% 92%;
-    --ring: 132 61% 42%;
-    --chart-1: 132 61% 42%;
-    --chart-2: 166 75% 35%;
-    --chart-3: 142 71% 45%;
-    --chart-4: 120 50% 50%;
-    --chart-5: 85 68% 45%;
-    --radius: 0.75rem;
+    --border: 145 35% 88%;
+    --input: 145 35% 90%;
+    --ring: 145 65% 30%;
+    --chart-1: 145 65% 30%;
+    --chart-2: 160 70% 40%;
+    --chart-3: 140 70% 38%;
+    --chart-4: 110 55% 42%;
+    --chart-5: 85 60% 40%;
+    --radius: 0.9rem;
   }
   .dark {
-    --background: 120 30% 12%;
-    --foreground: 132 30% 95%;
-    --card: 120 25% 18%;
-    --card-foreground: 132 30% 95%;
-    --popover: 120 25% 18%;
-    --popover-foreground: 132 30% 95%;
-    --primary: 142 71% 45%;
-    --primary-foreground: 120 30% 12%;
-    --secondary: 166 75% 35%;
+    --background: 155 40% 8%;
+    --foreground: 140 30% 94%;
+    --card: 155 35% 13%;
+    --card-foreground: 140 30% 94%;
+    --popover: 155 35% 13%;
+    --popover-foreground: 140 30% 94%;
+    --primary: 140 60% 45%;
+    --primary-foreground: 155 40% 8%;
+    --secondary: 160 50% 20%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 120 20% 35%;
-    --muted-foreground: 132 30% 75%;
-    --accent: 85 68% 45%;
-    --accent-foreground: 120 30% 12%;
-    --destructive: 0 62.8% 30.6%;
+    --muted: 155 30% 24%;
+    --muted-foreground: 140 25% 72%;
+    --accent: 95 60% 45%;
+    --accent-foreground: 155 40% 8%;
+    --destructive: 0 62.8% 40%;
     --destructive-foreground: 0 0% 98%;
-    --border: 120 20% 25%;
-    --input: 120 20% 22%;
-    --ring: 142 71% 45%;
-    --chart-1: 142 71% 45%;
-    --chart-2: 166 75% 35%;
-    --chart-3: 85 68% 45%;
-    --chart-4: 132 61% 42%;
-    --chart-5: 175 68% 45%;
+    --border: 155 30% 22%;
+    --input: 155 28% 20%;
+    --ring: 140 60% 45%;
+    --chart-1: 140 60% 45%;
+    --chart-2: 160 55% 40%;
+    --chart-3: 95 60% 45%;
+    --chart-4: 145 55% 40%;
+    --chart-5: 175 60% 42%;
   }
 }
 

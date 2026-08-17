@@ -19,6 +19,8 @@ import { CarbonOffsetHistory } from "@/components/carbon-offset-history"
 import { QRWalletScanner } from "@/components/qr-wallet-scanner"
 import { CarbonScanner } from "@/components/carbon-scanner"
 import { DAOGovernance } from "@/components/dao-governance"
+import { SendEthDialog } from "@/components/send-eth-dialog"
+import { ReceiveDialog } from "@/components/receive-dialog"
 import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
 
 interface MobileWalletDashboardProps {
@@ -30,6 +32,9 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
   const [activeTab, setActiveTab] = useState("portfolio")
   const [showBalance, setShowBalance] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [carbonOffset, setCarbonOffset] = useState(12.5)
+  const [sendOpen, setSendOpen] = useState(false)
+  const [receiveOpen, setReceiveOpen] = useState(false)
 
   const { isConnected, accounts, chainId, balance, connectedDApp, refreshBalance, connect, disconnect } =
     useCarbonFiWeb3()
@@ -45,21 +50,15 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
-  const getChainName = (chainId: string) => {
-    const chains: { [key: string]: string } = {
-      "0x1": "Ethereum",
-      "0xa4b1": "Arbitrum",
-      "0x2105": "Base",
-      "0x89": "Polygon",
-      "0x38": "BSC",
-    }
-    return chains[chainId] || "Unknown"
-  }
+  // Ethereum Mainnet only
+  const currentChainName = "Ethereum"
 
   const portfolioData = {
-    arbitrum: { balance: "1.25", symbol: "ETH", usd: "3,487.50", cafi: "2,500", change: "+5.2%" },
-    base: { balance: "0.85", symbol: "ETH", usd: "2,369.50", cafi: "1,800", change: "+3.1%" },
-    polygon: { balance: "50.00", symbol: "MATIC", usd: "22.50", cafi: "45", change: "-1.2%" },
+    balance: balance ? Number.parseFloat(balance).toFixed(4) : "0",
+    symbol: "ETH",
+    usd: "—",
+    cafi: "0",
+    change: "+0.0%",
   }
 
   if (activeTab === "scanner") {
@@ -67,11 +66,19 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
   }
 
   if (activeTab === "carbon-scanner") {
-    return <CarbonScanner onBack={() => setActiveTab("portfolio")} />
+    return (
+      <CarbonScanner
+        onClose={() => setActiveTab("portfolio")}
+        onOffsetComplete={(amount) => {
+          setCarbonOffset((prev) => prev + amount / 1000)
+          setActiveTab("portfolio")
+        }}
+      />
+    )
   }
 
   if (activeTab === "governance") {
-    return <DAOGovernance onBack={() => setActiveTab("portfolio")} />
+    return <DAOGovernance userTokenBalance={0} onBack={() => setActiveTab("portfolio")} />
   }
 
   return (
@@ -121,7 +128,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
                   {accounts[0] ? formatAddress(accounts[0]) : "Not connected"}
                 </span>
                 <div className="bg-gradient-to-r from-emerald-500/30 to-teal-500/30 dark:from-emerald-600/40 dark:to-teal-600/40 border border-emerald-500/50 dark:border-emerald-400/50 rounded-md px-2 py-1">
-                  <MobileChainSelector />
+                  <MobileChainSelector selectedChain="ethereum" onChainChange={() => {}} />
                 </div>
               </div>
               <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={isRefreshing} className="p-1">
@@ -140,27 +147,25 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
                   </Button>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {showBalance ? "$2,847.50" : "••••"} • {getChainName(chainId)}
+                  {showBalance ? balance : "••••"} • {currentChainName}
                 </p>
               </div>
 
-              {/* CAFI and ETH Balance Display */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-300/40 dark:border-emerald-600/40 rounded-lg p-3">
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-1">CAFI Balance</p>
-                  <p className="text-lg font-bold text-foreground">2,500 CAFI</p>
-                  <p className="text-xs text-muted-foreground">≈ $250.00</p>
-                </div>
-                <div className="bg-teal-50/50 dark:bg-teal-950/30 border border-teal-300/40 dark:border-teal-600/40 rounded-lg p-3">
-                  <p className="text-xs text-teal-700 dark:text-teal-400 font-semibold mb-1">ETH Balance</p>
-                  <p className="text-lg font-bold text-foreground">1.25 ETH</p>
-                  <p className="text-xs text-muted-foreground">≈ $3,487.50</p>
-                </div>
+              {/* ETH Balance Display */}
+              <div className="rounded-lg bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-300/40 dark:border-emerald-600/40 p-3">
+                <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-1">ETH Balance</p>
+                <p className="text-lg font-bold text-foreground">
+                  {showBalance ? `${balance} ETH` : "••••"}
+                </p>
               </div>
 
               {/* Send and Receive Buttons */}
               <div className="flex gap-3">
-                <Button size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700">
+                <Button
+                  size="sm"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  onClick={() => setSendOpen(true)}
+                >
                   <Send className="h-4 w-4 mr-1" />
                   Send
                 </Button>
@@ -168,6 +173,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
                   variant="outline"
                   size="sm"
                   className="flex-1 border-emerald-500/50 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 bg-transparent"
+                  onClick={() => setReceiveOpen(true)}
                 >
                   <QrCode className="h-4 w-4 mr-1" />
                   Receive
@@ -227,11 +233,11 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
               </Card>
             </div>
 
-            <TransactionHistory />
+            <TransactionHistory selectedChain="ethereum" />
           </TabsContent>
 
           <TabsContent value="carbon" className="space-y-4">
-            <CarbonAnalytics />
+            <CarbonAnalytics carbonOffset={carbonOffset} />
             <CarbonOffsetHistory />
           </TabsContent>
 
@@ -270,6 +276,9 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
           </TabsContent>
         </Tabs>
       </div>
+
+      <SendEthDialog open={sendOpen} onOpenChange={setSendOpen} />
+      <ReceiveDialog open={receiveOpen} onOpenChange={setReceiveOpen} />
     </div>
   )
 }

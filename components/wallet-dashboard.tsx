@@ -27,26 +27,28 @@ import { CarbonAnalytics } from "./carbon-analytics"
 import { CarbonScanner } from "./carbon-scanner"
 import { CarbonOffsetHistory } from "./carbon-offset-history"
 import { DAOGovernance } from "./dao-governance"
+import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
 
 interface WalletDashboardProps {
   walletType: "smart" | "self-custody"
 }
 
 export function WalletDashboard({ walletType }: WalletDashboardProps) {
-  const [selectedChain, setSelectedChain] = useState<"arbitrum" | "base" | "polygon">("arbitrum")
+  const [selectedChain, setSelectedChain] = useState<"ethereum">("ethereum")
   const [carbonOffset, setCarbonOffset] = useState(12.5) // tons of CO2
   const [carbonGoal] = useState(50) // tons of CO2
   const [showScanner, setShowScanner] = useState(false)
   const [showDAO, setShowDAO] = useState(false)
 
-  const portfolioData = {
-    arbitrum: { balance: "1,234.56", usd: "2,468.90", carbonfi: "500.00", change: "+12.5%" },
-    base: { balance: "987.65", usd: "1,975.30", carbonfi: "300.00", change: "+8.3%" },
-    polygon: { balance: "2,345.67", usd: "4,691.34", carbonfi: "750.00", change: "+15.7%" },
-  }
+  const { isConnected, accounts, chainId, balance, disconnect } = useCarbonFiWeb3()
 
-  const currentPortfolio = portfolioData[selectedChain]
-  const totalCarbonFi = Object.values(portfolioData).reduce((sum, data) => sum + Number.parseFloat(data.carbonfi), 0)
+  const currentPortfolio = {
+    balance: balance ? Number.parseFloat(balance).toLocaleString(undefined, { maximumFractionDigits: 4 }) : "0",
+    usd: "—",
+    carbonfi: "0.00",
+    change: "+0.0%",
+  }
+  const totalCarbonFi = 0
 
   const handleOffsetComplete = (amount: number, type: string) => {
     // Convert kg to tons and add to total offset
@@ -161,7 +163,7 @@ export function WalletDashboard({ walletType }: WalletDashboardProps) {
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-gradient-to-br from-carbon-accent/10 to-carbon-primary/10 rounded-xl border border-carbon-accent/20">
                 <p className="font-bold text-lg text-white">{currentPortfolio.balance}</p>
-                <p className="text-xs text-carbon-accent uppercase font-semibold">{selectedChain}</p>
+                <p className="text-xs text-carbon-accent uppercase font-semibold">ETH</p>
               </div>
               <div className="text-center p-4 bg-gradient-to-br from-carbon-primary/10 to-carbon-secondary/10 rounded-xl border border-carbon-primary/20">
                 <p className="font-bold text-lg text-white">{currentPortfolio.carbonfi}</p>

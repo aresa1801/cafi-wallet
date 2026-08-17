@@ -6,80 +6,50 @@ import { Button } from "@/components/ui/button"
 import { ArrowUpRight, ArrowDownLeft, ArrowUpDown, ExternalLink, Leaf, Clock } from "lucide-react"
 
 interface TransactionHistoryProps {
-  selectedChain: "arbitrum" | "base" | "polygon"
+  selectedChain: "ethereum"
 }
 
-const mockTransactions = {
-  arbitrum: [
-    {
-      id: "1",
-      type: "carbon-offset",
-      amount: "2.5 tons CO₂",
-      status: "success",
-      time: "2 hours ago",
-      hash: "0x1234...5678",
-      icon: Leaf,
-      color: "text-carbon-primary",
-      bgColor: "bg-carbon-primary/10",
-      borderColor: "border-carbon-primary/20",
-    },
-    {
-      id: "2",
-      type: "send",
-      amount: "100 CAFI",
-      status: "success",
-      time: "1 day ago",
-      hash: "0xabcd...efgh",
-      icon: ArrowUpRight,
-      color: "text-carbon-orange",
-      bgColor: "bg-carbon-orange/10",
-      borderColor: "border-carbon-orange/20",
-    },
-    {
-      id: "3",
-      type: "receive",
-      amount: "50 ARB",
-      status: "success",
-      time: "2 days ago",
-      hash: "0x9876...5432",
-      icon: ArrowDownLeft,
-      color: "text-success",
-      bgColor: "bg-success/10",
-      borderColor: "border-success/20",
-    },
-  ],
-  base: [
-    {
-      id: "4",
-      type: "bridge",
-      amount: "200 CARBONFI",
-      status: "pending",
-      time: "30 minutes ago",
-      hash: "0xdef0...1234",
-      icon: ArrowUpDown,
-      color: "text-carbon-accent",
-      bgColor: "bg-carbon-accent/10",
-      borderColor: "border-carbon-accent/20",
-    },
-  ],
-  polygon: [
-    {
-      id: "5",
-      type: "carbon-offset",
-      amount: "1.8 tons CO₂",
-      status: "success",
-      time: "3 hours ago",
-      hash: "0x5678...9abc",
-      icon: Leaf,
-      color: "text-carbon-primary",
-      bgColor: "bg-carbon-primary/10",
-      borderColor: "border-carbon-primary/20",
-    },
-  ],
-}
+const mockTransactions = [
+  {
+    id: "1",
+    type: "carbon-offset",
+    amount: "2.5 tons CO₂",
+    status: "success",
+    time: "2 hours ago",
+    hash: "0x1234...5678",
+    icon: Leaf,
+    color: "text-carbon-primary",
+    bgColor: "bg-carbon-primary/10",
+    borderColor: "border-carbon-primary/20",
+  },
+  {
+    id: "2",
+    type: "send",
+    amount: "100 CAFI",
+    status: "success",
+    time: "1 day ago",
+    hash: "0xabcd...efgh",
+    icon: ArrowUpRight,
+    color: "text-carbon-orange",
+    bgColor: "bg-carbon-orange/10",
+    borderColor: "border-carbon-orange/20",
+  },
+  {
+    id: "3",
+    type: "receive",
+    amount: "0.5 ETH",
+    status: "success",
+    time: "2 days ago",
+    hash: "0x9876...5432",
+    icon: ArrowDownLeft,
+    color: "text-success",
+    bgColor: "bg-success/10",
+    borderColor: "border-success/20",
+  },
+]
 
 export function TransactionHistory({ selectedChain }: TransactionHistoryProps) {
-  const transactions = mockTransactions[selectedChain] || []
+  const transactions = mockTransactions
 
   return (
     <Card className="bg-dark-card border-dark-border">

@@ -17,11 +17,9 @@ export default function CarbonFiWallet() {
   const [showSetup, setShowSetup] = useState(false)
 
   useEffect(() => {
-    // Detect if user is on mobile
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768 || /Android|webOS|iPhone|iPad|IEMobile|Opera Mini/i.test(navigator.userAgent))
     }
-
     checkMobile()
     window.addEventListener("resize", checkMobile)
     return () => window.removeEventListener("resize", checkMobile)
@@ -57,7 +55,11 @@ export default function CarbonFiWallet() {
   }
 
   if (!isLoggedIn) {
-    return <MobileLoginScreen onLogin={handleLogin} />
+    return (
+      <CarbonFiWeb3Provider>
+        <MobileLoginScreen onLogin={handleLogin} onOpenSetup={() => setShowSetup(true)} />
+      </CarbonFiWeb3Provider>
+    )
   }
 
   return (
