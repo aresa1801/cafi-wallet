@@ -1,8 +1,7 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Leaf, Car, Plane, Home, ShoppingCart, Calendar, TrendingUp, ExternalLink, Filter } from "lucide-react"
 
 interface OffsetRecord {
@@ -82,128 +81,136 @@ export function CarbonOffsetHistory() {
   const getTypeColor = (type: string) => {
     switch (type) {
       case "receipt":
-        return "text-carbon-primary"
+        return "text-emerald-400"
       case "fuel":
-        return "text-carbon-orange"
+        return "text-orange-400"
       case "flight":
-        return "text-carbon-accent"
+        return "text-teal-300"
       case "utility":
-        return "text-carbon-purple"
+        return "text-lime-300"
       default:
-        return "text-carbon-primary"
+        return "text-emerald-400"
     }
   }
 
   const getTypeBg = (type: string) => {
     switch (type) {
       case "receipt":
-        return "bg-carbon-primary/10 border-carbon-primary/20"
+        return "border-emerald-500/20 bg-emerald-500/5"
       case "fuel":
-        return "bg-carbon-orange/10 border-carbon-orange/20"
+        return "border-orange-500/20 bg-orange-500/5"
       case "flight":
-        return "bg-carbon-accent/10 border-carbon-accent/20"
+        return "border-teal-500/20 bg-teal-500/5"
       case "utility":
-        return "bg-carbon-purple/10 border-carbon-purple/20"
+        return "border-lime-500/20 bg-lime-500/5"
       default:
-        return "bg-carbon-primary/10 border-carbon-primary/20"
+        return "border-emerald-500/20 bg-emerald-500/5"
     }
   }
 
   const totalOffset = mockOffsetHistory.reduce((sum, record) => sum + record.carbonOffset, 0)
   const totalCost = mockOffsetHistory.reduce((sum, record) => sum + record.cost, 0)
 
+  const statusBadge = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+      case "pending":
+        return "border-amber-500/40 bg-amber-500/10 text-amber-300"
+      default:
+        return "border-red-500/40 bg-red-500/10 text-red-300"
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="bg-gradient-to-br from-carbon-primary/10 to-carbon-secondary/10 border-carbon-primary/20">
+      <div className="grid grid-cols-2 gap-3">
+        <Card className="border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-transparent">
           <CardContent className="p-4 text-center">
-            <Leaf className="w-8 h-8 text-carbon-primary mx-auto mb-2" />
+            <Leaf className="mx-auto mb-2 h-7 w-7 text-emerald-400" />
             <p className="text-2xl font-bold text-white">{totalOffset.toFixed(1)} kg</p>
-            <p className="text-xs text-carbon-primary">Total CO₂ Offset</p>
+            <p className="text-xs text-emerald-300">Total CO₂ Offset</p>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-carbon-accent/10 to-carbon-purple/10 border-carbon-accent/20">
+        <Card className="border border-teal-500/20 bg-gradient-to-br from-teal-500/10 to-transparent">
           <CardContent className="p-4 text-center">
-            <TrendingUp className="w-8 h-8 text-carbon-accent mx-auto mb-2" />
+            <TrendingUp className="mx-auto mb-2 h-7 w-7 text-teal-300" />
             <p className="text-2xl font-bold text-white">${totalCost.toFixed(2)}</p>
-            <p className="text-xs text-carbon-accent">Total Investment</p>
+            <p className="text-xs text-teal-300">Total Investment</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filter Options */}
-      <Card className="bg-dark-card border-dark-border">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-white flex items-center space-x-2">
-              <Calendar className="w-5 h-5 text-carbon-primary" />
-              <span>Offset History</span>
-            </CardTitle>
-            <Button variant="outline" size="sm" className="border-dark-border text-dark-muted hover:bg-dark-surface">
-              <Filter className="w-4 h-4 mr-2" />
-              Filter
-            </Button>
+      {/* Offset History */}
+      <Card className="border border-white/10 bg-white/5">
+        <CardContent className="p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-emerald-400" />
+              <span className="text-sm font-semibold text-white">Offset History</span>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1 text-xs text-white/50">
+              <Filter className="h-3 w-3" /> Filter
+            </span>
           </div>
-        </CardHeader>
-        <CardContent>
+
           <div className="space-y-3">
             {mockOffsetHistory.map((record) => {
               const IconComponent = getTypeIcon(record.type)
+              const borderColor =
+                record.type === "receipt"
+                  ? "border-emerald-500/30"
+                  : record.type === "fuel"
+                    ? "border-orange-500/30"
+                    : record.type === "flight"
+                      ? "border-teal-500/30"
+                      : "border-lime-500/30"
               return (
                 <div
                   key={record.id}
-                  className={`p-4 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${getTypeBg(record.type)}`}
+                  className={`rounded-xl border p-3.5 transition hover:scale-[1.02] ${getTypeBg(record.type)}`}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center space-x-3">
+                  <div className="mb-3 flex items-start justify-between">
+                    <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-full bg-dark-card flex items-center justify-center border ${record.type === "receipt" ? "border-carbon-primary/20" : record.type === "fuel" ? "border-carbon-orange/20" : record.type === "flight" ? "border-carbon-accent/20" : "border-carbon-purple/20"}`}
+                        className={`flex h-10 w-10 items-center justify-center rounded-full bg-black/20 ring-1 ${borderColor}`}
                       >
-                        <IconComponent className={`w-5 h-5 ${getTypeColor(record.type)}`} />
+                        <IconComponent className={`h-5 w-5 ${getTypeColor(record.type)}`} />
                       </div>
                       <div>
-                        <p className="font-semibold text-white capitalize">{record.type}</p>
-                        <p className="text-sm text-dark-muted">{record.merchant}</p>
+                        <p className="text-sm font-semibold text-white capitalize">{record.type}</p>
+                        <p className="text-xs text-white/40">{record.merchant}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <Badge
-                        className={`text-xs font-semibold ${
-                          record.status === "completed"
-                            ? "bg-success text-dark-bg"
-                            : record.status === "pending"
-                              ? "bg-warning text-dark-bg"
-                              : "bg-error text-white"
-                        }`}
-                      >
-                        {record.status}
-                      </Badge>
+                    <Badge variant="outline" className={`text-[10px] ${statusBadge(record.status)}`}>
+                      {record.status}
+                    </Badge>
+                  </div>
+
+                  <div className="mb-3 grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-[11px] text-white/40">Purchase</p>
+                      <p className="font-semibold text-white">${record.amount}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-white/40">CO₂ Offset</p>
+                      <p className={`font-semibold ${getTypeColor(record.type)}`}>{record.carbonOffset} kg</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-white/40">Cost</p>
+                      <p className="font-semibold text-white">${record.cost}</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4 text-sm mb-3">
-                    <div>
-                      <p className="text-dark-muted">Purchase</p>
-                      <p className="text-white font-semibold">${record.amount}</p>
-                    </div>
-                    <div>
-                      <p className="text-dark-muted">CO₂ Offset</p>
-                      <p className="text-carbon-primary font-semibold">{record.carbonOffset} kg</p>
-                    </div>
-                    <div>
-                      <p className="text-dark-muted">Cost</p>
-                      <p className="text-white font-semibold">${record.cost}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-dark-muted">{new Date(record.date).toLocaleDateString()}</p>
+                  <div className="flex items-center justify-between border-t border-white/5 pt-2">
+                    <p className="text-[11px] text-white/40">
+                      {new Date(record.date).toLocaleDateString()}
+                    </p>
                     {record.txHash && (
-                      <Button variant="ghost" size="sm" className="h-6 text-carbon-accent hover:text-white">
-                        <ExternalLink className="w-3 h-3 mr-1" />
-                        <span className="text-xs">View Tx</span>
-                      </Button>
+                      <span className="inline-flex items-center gap-1 text-[11px] text-emerald-300">
+                        <ExternalLink className="h-3 w-3" /> View Tx
+                      </span>
                     )}
                   </div>
                 </div>

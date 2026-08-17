@@ -1,12 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Shield, Leaf, Zap, Users, ArrowRight, Loader2, Chrome, KeyRound } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { SustainabilityBackground } from "@/components/sustainability-background"
-import Image from "next/image"
+import { Shield, Leaf, Zap, ArrowRight, Loader2, KeyRound, Chrome, Sparkles } from "lucide-react"
 import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
 
 interface MobileLoginScreenProps {
@@ -17,7 +14,7 @@ interface MobileLoginScreenProps {
 export function MobileLoginScreen({ onLogin, onOpenSetup }: MobileLoginScreenProps) {
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { connectInjected, connectPrivateKey } = useCarbonFiWeb3()
+  const { connectInjected } = useCarbonFiWeb3()
 
   const handleInjectedConnect = async () => {
     setError(null)
@@ -46,101 +43,125 @@ export function MobileLoginScreen({ onLogin, onOpenSetup }: MobileLoginScreenPro
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col relative overflow-hidden">
-      <SustainabilityBackground />
-      <div className="relative z-10 flex flex-col min-h-[100dvh]">
+    <div className="min-h-[100dvh] relative overflow-hidden bg-[#0B1210] flex flex-col">
+      {/* Ambient glows */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 -right-20 h-80 w-80 rounded-full bg-emerald-500/15 blur-[100px]" />
+        <div className="absolute top-1/2 -left-24 h-72 w-72 rounded-full bg-teal-500/10 blur-[100px]" />
+        <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-green-600/10 blur-[100px]" />
+      </div>
+
+      <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col px-6 pb-8 pt-10">
         {/* Header */}
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Leaf className="h-5 w-5 text-primary" />
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-green-600 shadow-lg shadow-emerald-500/30">
+              <Leaf className="h-6 w-6 text-white" />
             </div>
-            <span className="font-bold text-lg tracking-tight">CarbonFi Wallet</span>
+            <div>
+              <p className="text-base font-bold leading-none">CarbonFi Wallet</p>
+              <p className="mt-0.5 text-[11px] text-emerald-400/70">Powered by Ethereum</p>
+            </div>
           </div>
-          <ThemeToggle />
+          <Badge variant="outline" className="gap-1.5 border-emerald-500/40 text-emerald-300">
+            <Shield className="h-3.5 w-3.5" /> Secure
+          </Badge>
         </div>
 
         {/* Hero */}
-        <div className="px-6 pt-6 pb-2">
-          <h1 className="text-3xl font-extrabold leading-tight tracking-tight">
-            Selamat datang di
+        <div className="mb-6">
+          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300">
+            <Sparkles className="h-3.5 w-3.5" />
+            Web3 Carbon Wallet
+          </div>
+          <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-white">
+            Kelola aset &
             <br />
-            <span className="text-primary">Wallet Hijau</span> kamu 🌿
+            offset <span className="bg-gradient-to-r from-emerald-400 to-lime-300 bg-clip-text text-transparent">karbon</span>
+            <br />
+            dalam satu dompet 🌿
           </h1>
-          <p className="mt-3 text-muted-foreground text-sm leading-relaxed max-w-sm">
-            Dompet Web3 asli dengan dukungan penuh platform CarbonFi &amp; Athlas Verity.
-            Satu dompet untuk karbon, NFT, dan aset digitalmu di Ethereum.
+          <p className="mt-4 text-sm leading-relaxed text-white/50">
+            Dompet Web3 asli untuk CarbonFi &amp; Athlas Verity. Karbon, NFT, dan aset digital di Ethereum Mainnet.
           </p>
         </div>
 
-        {/* Feature badges */}
-        <div className="px-6 pt-4 flex flex-wrap gap-2">
-          <Badge variant="secondary" className="gap-1.5 bg-primary/10 text-primary">
-            <Leaf className="h-3.5 w-3.5" /> Karbon Offset
-          </Badge>
-          <Badge variant="secondary" className="gap-1.5 bg-secondary/10">
-            <Zap className="h-3.5 w-3.5" /> Fast &amp; Gas-less
-          </Badge>
-          <Badge variant="secondary" className="gap-1.5 bg-secondary/10">
-            <Shield className="h-3.5 w-3.5" /> Self-Custody
-          </Badge>
-          <Badge variant="secondary" className="gap-1.5 bg-secondary/10">
-            <Users className="h-3.5 w-3.5" /> DAO Ready
-          </Badge>
+        {/* Feature pills */}
+        <div className="mb-8 flex flex-wrap gap-2">
+          <span className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-[11px] text-white/60 ring-1 ring-white/10">
+            <Leaf className="h-3.5 w-3.5 text-emerald-400" /> Carbon Offset
+          </span>
+          <span className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-[11px] text-white/60 ring-1 ring-white/10">
+            <Zap className="h-3.5 w-3.5 text-emerald-400" /> Fast &amp; Secure
+          </span>
+          <span className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-[11px] text-white/60 ring-1 ring-white/10">
+            <Shield className="h-3.5 w-3.5 text-emerald-400" /> Self-Custody
+          </span>
         </div>
 
         {/* Wallet options */}
-        <div className="flex-1 flex items-end px-5 pb-8 pt-10">
-          <Card className="w-full border-2 border-primary/20 bg-card/80 backdrop-blur">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Pilih metode masuk</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {error && (
-                <div className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</div>
-              )}
+        <div className="mt-auto">
+          {error && (
+            <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-300">
+              {error}
+            </div>
+          )}
 
-              {/* Injected / extension wallet */}
-              <button
-                onClick={handleInjectedConnect}
-                disabled={isConnecting}
-                className="w-full flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3.5 text-left transition hover:border-primary/50 hover:bg-primary/5 disabled:opacity-60"
-              >
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  {isConnecting ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  ) : (
-                    <Chrome className="h-5 w-5 text-primary" />
-                  )}
+          <button
+            onClick={handleInjectedConnect}
+            disabled={isConnecting}
+            className="group mb-3 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left backdrop-blur transition hover:border-emerald-500/40 hover:bg-white/10 disabled:opacity-60"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-amber-600 shadow-lg shadow-orange-500/20">
+                {isConnecting ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-white" />
+                ) : (
+                  <Chrome className="h-5 w-5 text-white" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 font-semibold text-white">
+                  MetaMask / Rabby
+                  <ArrowRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-emerald-300" />
                 </div>
-                <div className="min-w-0">
-                  <div className="font-semibold text-sm">Metamask / Rabby / WalletConnect</div>
-                  <div className="text-xs text-muted-foreground">Hubungkan dompet web3 yang terpasang</div>
-                </div>
-                <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
-              </button>
+                <div className="text-xs text-white/40">Hubungkan dompet Web3 yang terpasang</div>
+              </div>
+            </div>
+          </button>
 
-              {/* Self-custody */}
-              <button
-                onClick={handleSelfCustody}
-                disabled={isConnecting}
-                className="w-full flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3.5 text-left transition hover:border-primary/50 hover:bg-primary/5 disabled:opacity-60"
-              >
-                <div className="h-10 w-10 rounded-lg bg-secondary/20 flex items-center justify-center shrink-0">
-                  <KeyRound className="h-5 w-5 text-secondary" />
+          <button
+            onClick={handleSelfCustody}
+            disabled={isConnecting}
+            className="group mb-3 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left backdrop-blur transition hover:border-emerald-500/40 hover:bg-white/10 disabled:opacity-60"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 shadow-lg shadow-emerald-500/20">
+                <KeyRound className="h-5 w-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 font-semibold text-white">
+                  Self-Custody Wallet
+                  <ArrowRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-emerald-300" />
                 </div>
-                <div className="min-w-0">
-                  <div className="font-semibold text-sm">Self-Custody Wallet</div>
-                  <div className="text-xs text-muted-foreground">Buat atau impor dengan seed phrase</div>
-                </div>
-                <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
-              </button>
+                <div className="text-xs text-white/40">Buat atau impor dengan private key</div>
+              </div>
+            </div>
+          </button>
 
-              <p className="pt-1 text-center text-[11px] text-muted-foreground">
-                Hanya mendukung <span className="font-semibold text-foreground">Ethereum Mainnet</span>
-              </p>
-            </CardContent>
-          </Card>
+          <div className="mt-4 flex items-center justify-center gap-3 text-[11px] text-white/30">
+            <div className="h-px flex-1 bg-white/10" />
+            Hanya Ethereum Mainnet
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <Button
+            variant="ghost"
+            className="mt-4 w-full gap-1.5 text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300"
+          >
+            <Leaf className="h-4 w-4" />
+            Tentang CarbonFi
+          </Button>
         </div>
       </div>
     </div>

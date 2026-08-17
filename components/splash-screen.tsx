@@ -1,9 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Image from "next/image"
-import { SustainabilityOrnaments } from "@/components/sustainability-ornaments"
-import { GreenParticles } from "@/components/green-particles"
+import { Leaf } from "lucide-react"
 
 interface SplashScreenProps {
   onComplete: () => void
@@ -17,45 +15,43 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(timer)
-          setTimeout(onComplete, 500)
+          setTimeout(onComplete, 400)
           return 100
         }
         return prev + 2
       })
-    }, 50)
+    }, 45)
 
     return () => clearInterval(timer)
   }, [onComplete])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-gray-900 dark:via-green-900/20 dark:to-emerald-900/20 flex items-center justify-center relative overflow-hidden">
-      <SustainabilityOrnaments />
-      <GreenParticles count={20} />
+    <div className="relative min-h-screen overflow-hidden bg-[#060B09] flex items-center justify-center">
+      {/* Ambient glows */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-1/2 top-1/4 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-500/20 blur-[100px]" />
+        <div className="absolute bottom-10 right-10 h-56 w-56 rounded-full bg-teal-500/10 blur-[90px]" />
+      </div>
 
-      <div className="text-center relative z-10">
-        <div className="relative inline-block mb-8">
-          <Image
-            src="/images/carbonfi-icon.png"
-            alt="CarbonFi Logo"
-            width={190}
-            height={190}
-            className="mx-auto animate-pulse"
-            priority
-          />
-          <div className="absolute inset-0 bg-green-400/30 rounded-full blur-2xl animate-ping"></div>
+      <div className="relative z-10 text-center">
+        <div className="relative mx-auto mb-6 inline-block">
+          <div className="flex h-24 w-24 items-center justify-center rounded-[28px] bg-gradient-to-br from-emerald-400 to-green-700 shadow-2xl shadow-emerald-500/40">
+            <Leaf className="h-12 w-12 text-white" />
+          </div>
+          <div className="absolute inset-0 -z-10 rounded-[28px] bg-emerald-400/30 blur-xl animate-pulse" />
         </div>
 
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">CarbonFi</h1>
-        <p className="text-gray-600 dark:text-gray-300 mb-8">Sustainable Web3 Wallet</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-white">CarbonFi</h1>
+        <p className="mt-1 text-sm text-emerald-300/70">Web3 Carbon Wallet</p>
 
-        <div className="w-64 mx-auto">
-          <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
+        <div className="mx-auto mt-8 w-56">
+          <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-white/10">
             <div
-              className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all duration-300"
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-lime-400 transition-all duration-300"
               style={{ width: `${progress}%` }}
-            ></div>
+            />
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading... {progress}%</p>
+          <p className="text-xs text-white/40">Loading... {progress}%</p>
         </div>
       </div>
     </div>

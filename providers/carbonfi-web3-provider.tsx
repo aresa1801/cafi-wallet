@@ -59,12 +59,34 @@ export interface CarbonFiWeb3ContextType {
 
 export const CarbonFiWeb3Context = createContext<CarbonFiWeb3ContextType | undefined>(undefined)
 
+const RPC_URLS = [
+  process.env.NEXT_PUBLIC_ETH_RPC_URL,
+  "https://eth.llamarpc.com",
+  "https://rpc.ankr.com/eth",
+  "https://ethereum.publicnode.com",
+  "https://1rpc.io/eth",
+].filter((url): url is string => typeof url === "string" && url.length > 0)
+
+async function createEthProvider() {
+  let lastError: unknown = null
+  for (const url of RPC_URLS) {
+    try {
+      const provider = new ethers.JsonRpcProvider(url)
+      await provider.getBlockNumber()
+      return provider
+    } catch (e) {
+      lastError = e
+    }
+  }
+  throw lastError ?? new Error("No working Ethereum RPC available")
+}
+
 // Ethereum Mainnet only
 const ETHEREUM_MAINNET = {
   chainId: "0x1",
   chainName: "Ethereum Mainnet",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-  rpcUrls: ["https://mainnet.infura.io/v3/"],
+  rpcUrls: RPC_URLS,
   blockExplorerUrls: ["https://etherscan.io/"],
 }
 
@@ -177,8 +199,7 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
       }
       const wallet = new ethers.Wallet(key)
       const addr = wallet.address.toLowerCase()
-      const rpcUrl = "https://eth.llamarpc.com"
-      const rpcProvider = new ethers.JsonRpcProvider(rpcUrl)
+      const rpcProvider = await createEthProvider()
       const signer = wallet.connect(rpcProvider)
 
       setAccounts([addr])

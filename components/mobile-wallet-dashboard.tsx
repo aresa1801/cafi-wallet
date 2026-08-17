@@ -1,24 +1,34 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Wallet, Send, QrCode, Leaf, TrendingUp, Users, RefreshCw, Wifi, WifiOff, Eye, EyeOff } from "lucide-react"
-import { CarbonFiLogo } from "@/components/carbonfi-logo"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { SustainabilityOrnaments } from "@/components/sustainability-ornaments"
-import { GreenParticles } from "@/components/green-particles"
-import { EcoBadge } from "@/components/eco-badge"
+import {
+  Wallet,
+  Send,
+  Leaf,
+  RefreshCw,
+  Eye,
+  EyeOff,
+  Home,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Repeat,
+  Settings,
+  Copy,
+  Check,
+  Sparkles,
+  LogOut,
+  ShieldCheck,
+  Activity,
+  ScanLine,
+  Globe,
+} from "lucide-react"
 import { PortfolioStats } from "@/components/portfolio-stats"
-import { MobileChainSelector } from "@/components/mobile-chain-selector"
 import { TransactionHistory } from "@/components/transaction-history"
 import { CarbonAnalytics } from "@/components/carbon-analytics"
 import { CarbonOffsetHistory } from "@/components/carbon-offset-history"
 import { QRWalletScanner } from "@/components/qr-wallet-scanner"
-import { CarbonScanner } from "@/components/carbon-scanner"
-import { DAOGovernance } from "@/components/dao-governance"
 import { SendEthDialog } from "@/components/send-eth-dialog"
 import { ReceiveDialog } from "@/components/receive-dialog"
 import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
@@ -28,16 +38,19 @@ interface MobileWalletDashboardProps {
   walletInfo?: any
 }
 
+type TabKey = "home" | "activity" | "carbon" | "settings"
+
 export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDashboardProps) {
-  const [activeTab, setActiveTab] = useState("portfolio")
+  const [activeTab, setActiveTab] = useState<TabKey>("home")
   const [showBalance, setShowBalance] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [carbonOffset, setCarbonOffset] = useState(12.5)
   const [sendOpen, setSendOpen] = useState(false)
   const [receiveOpen, setReceiveOpen] = useState(false)
+  const [scannerOpen, setScannerOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
 
-  const { isConnected, accounts, chainId, balance, connectedDApp, refreshBalance, connect, disconnect } =
-    useCarbonFiWeb3()
+  const { isConnected, accounts, balance, refreshBalance, disconnect } = useCarbonFiWeb3()
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -50,8 +63,12 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
-  // Ethereum Mainnet only
-  const currentChainName = "Ethereum"
+  const handleCopyAddress = () => {
+    if (!accounts[0]) return
+    navigator.clipboard.writeText(accounts[0])
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const portfolioData = {
     balance: balance ? Number.parseFloat(balance).toFixed(4) : "0",
@@ -61,224 +78,313 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
     change: "+0.0%",
   }
 
-  if (activeTab === "scanner") {
-    return <QRWalletScanner onBack={() => setActiveTab("portfolio")} />
-  }
-
-  if (activeTab === "carbon-scanner") {
-    return (
-      <CarbonScanner
-        onClose={() => setActiveTab("portfolio")}
-        onOffsetComplete={(amount) => {
-          setCarbonOffset((prev) => prev + amount / 1000)
-          setActiveTab("portfolio")
-        }}
-      />
-    )
-  }
-
-  if (activeTab === "governance") {
-    return <DAOGovernance userTokenBalance={0} onBack={() => setActiveTab("portfolio")} />
-  }
+  const navItems: { key: TabKey; label: string; icon: typeof Home }[] = [
+    { key: "home", label: "Home", icon: Home },
+    { key: "activity", label: "Activity", icon: Activity },
+    { key: "carbon", label: "Carbon", icon: Leaf },
+    { key: "settings", label: "Settings", icon: Settings },
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-gray-900 dark:via-green-900/20 dark:to-emerald-900/20 relative overflow-hidden">
-      <SustainabilityOrnaments />
-      <GreenParticles />
+    <div className="min-h-screen bg-[#0B1210] text-foreground relative overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-32 -left-24 h-80 w-80 rounded-full bg-emerald-500/20 blur-[100px]" />
+        <div className="absolute top-1/3 -right-24 h-72 w-72 rounded-full bg-teal-500/10 blur-[100px]" />
+        <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-green-600/10 blur-[100px]" />
+      </div>
 
-      {/* Header */}
-      <div className="relative z-10 p-4 pb-0">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <CarbonFiLogo className="w-10 h-10" />
+      <div className="relative z-10 mx-auto max-w-md px-4 pb-32 pt-5">
+        {/* Top bar */}
+        <div className="mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 shadow-lg shadow-emerald-500/30">
+              <Leaf className="h-5 w-5 text-white" />
+            </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">CarbonFi</h1>
-              <div className="flex items-center gap-2">
-                <Badge variant={isConnected ? "default" : "secondary"} className="text-xs">
-                  {isConnected ? (
-                    <>
-                      <Wifi className="w-3 h-3 mr-1" /> Connected
-                    </>
-                  ) : (
-                    <>
-                      <WifiOff className="w-3 h-3 mr-1" /> Disconnected
-                    </>
-                  )}
-                </Badge>
-                {connectedDApp && (
-                  <Badge variant="outline" className="text-xs">
-                    {connectedDApp}
-                  </Badge>
-                )}
-              </div>
+              <p className="text-sm font-bold leading-none">CarbonFi Wallet</p>
+              <p className="mt-0.5 text-[11px] text-emerald-400/80">Ethereum Mainnet</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <EcoBadge />
-          </div>
+          <Badge
+            variant="outline"
+            className={`gap-1.5 border-emerald-500/40 text-[11px] ${
+              isConnected ? "bg-emerald-500/10 text-emerald-400" : "bg-gray-500/10 text-gray-400"
+            }`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${isConnected ? "bg-emerald-400 animate-pulse" : "bg-gray-400"}`} />
+            {isConnected ? "Connected" : "Offline"}
+          </Badge>
         </div>
 
-        {/* Wallet Info */}
-        <Card className="mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-green-200 dark:border-green-800">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 dark:text-gray-300">
+        {/* ======================= HOME TAB ======================= */}
+        {activeTab === "home" && (
+          <>
+            {/* Balance Hero Card */}
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-500/20 via-green-700/20 to-black p-5 shadow-2xl shadow-emerald-900/40">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-emerald-400/20 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-12 -left-8 h-36 w-36 rounded-full bg-teal-400/10 blur-3xl" />
+
+              <div className="relative">
+                <div className="mb-4 flex items-center justify-between">
+                  <span className="text-xs font-medium uppercase tracking-wider text-emerald-200/60">
+                    Total Balance
+                  </span>
+                  <button
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    className="rounded-lg p-1.5 text-emerald-200/70 transition hover:bg-white/10 hover:text-white"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                  </button>
+                </div>
+
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="text-4xl font-extrabold tracking-tight text-white">
+                    {showBalance ? `${balance} ` : "•••••• "}
+                  </span>
+                  <span className="text-xl font-bold text-emerald-300">ETH</span>
+                  <button
+                    onClick={() => setShowBalance(!showBalance)}
+                    className="ml-1 rounded-lg p-1.5 text-emerald-200/70 transition hover:bg-white/10 hover:text-white"
+                  >
+                    {showBalance ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                  </button>
+                </div>
+
+                <div className="mb-5 flex items-center gap-1.5 text-sm text-emerald-100/70">
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-300" />
+                  <span>Carbon-Neutral Portfolio</span>
+                </div>
+
+                <button
+                  onClick={handleCopyAddress}
+                  className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-medium text-white/90 backdrop-blur transition hover:bg-white/10"
+                >
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
                   {accounts[0] ? formatAddress(accounts[0]) : "Not connected"}
-                </span>
-                <div className="bg-gradient-to-r from-emerald-500/30 to-teal-500/30 dark:from-emerald-600/40 dark:to-teal-600/40 border border-emerald-500/50 dark:border-emerald-400/50 rounded-md px-2 py-1">
-                  <MobileChainSelector selectedChain="ethereum" onChainChange={() => {}} />
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-400" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5 text-white/50" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mt-5 grid grid-cols-4 gap-3">
+              <button
+                onClick={() => setSendOpen(true)}
+                className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-2 py-4 transition hover:bg-white/10"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 shadow-lg shadow-emerald-500/20">
+                  <ArrowUpRight className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-white/80">Send</span>
+              </button>
+              <button
+                onClick={() => setReceiveOpen(true)}
+                className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-2 py-4 transition hover:bg-white/10"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 shadow-lg shadow-teal-500/20">
+                  <ArrowDownLeft className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-white/80">Receive</span>
+              </button>
+              <button
+                className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-2 py-4 transition hover:bg-white/10"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-lime-400 to-emerald-600 shadow-lg shadow-lime-500/20">
+                  <Repeat className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-white/80">Swap</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("carbon")}
+                className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-2 py-4 transition hover:bg-white/10"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-emerald-700 shadow-lg shadow-green-500/20">
+                  <Leaf className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-white/80">Carbon</span>
+              </button>
+            </div>
+
+            {/* Portfolio Allocation */}
+            <div className="mt-5">
+              <PortfolioStats portfolioData={portfolioData} />
+            </div>
+
+            {/* Assets */}
+            <div className="mt-5 rounded-2xl border border-white/10 bg-white/5">
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm font-semibold text-white">Assets</span>
+                <button
+                  onClick={() => setActiveTab("activity")}
+                  className="text-[11px] font-medium text-emerald-400/80 hover:text-emerald-300"
+                >
+                  View all →
+                </button>
+              </div>
+              <button
+                onClick={() => setActiveTab("activity")}
+                className="flex w-full items-center gap-3 border-t border-white/5 px-4 py-3.5 transition hover:bg-white/5"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#627EEA]/20 ring-1 ring-[#627EEA]/40">
+                  <span className="text-sm font-bold text-[#8ea7ff]">Ξ</span>
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium text-white">Ethereum</p>
+                  <p className="text-xs text-white/40">ETH</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-white">{showBalance ? balance : "••••"}</p>
+                  <p className="text-xs text-white/40">— USD</p>
+                </div>
+              </button>
+              <div className="flex w-full items-center gap-3 border-t border-white/5 px-4 py-3.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-500/40">
+                  <Leaf className="h-5 w-5 text-emerald-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium text-white">CarbonFi Token</p>
+                  <p className="text-xs text-white/40">CAFI</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-white">0</p>
+                  <p className="text-xs text-white/40">— USD</p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={isRefreshing} className="p-1">
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            </div>
+
+            {/* Carbon summary */}
+            <div className="mt-5 rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-transparent p-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Leaf className="h-4 w-4 text-emerald-400" />
+                <span className="text-sm font-semibold text-emerald-200">Carbon Offset</span>
+              </div>
+              <p className="text-2xl font-bold text-white">
+                {carbonOffset} <span className="text-sm font-medium text-emerald-300">ton CO₂</span>
+              </p>
+              <p className="mt-1 text-xs text-white/50">
+                Offset karbon lewat dMRV &amp; verifikasi Athlas Verity
+              </p>
+            </div>
+          </>
+        )}
+
+        {/* ======================= ACTIVITY TAB ======================= */}
+        {activeTab === "activity" && (
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-bold text-white">Activity</h2>
+              <p className="text-xs text-white/40">Riwayat transaksi Ethereum Mainnet</p>
+            </div>
+            <TransactionHistory selectedChain="ethereum" />
+          </div>
+        )}
+
+        {/* ======================= CARBON TAB ======================= */}
+        {activeTab === "carbon" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-white">Carbon Hub</h2>
+                <p className="text-xs text-white/40">Offset &amp; verifikasi karbon</p>
+              </div>
+              <Button
+                onClick={() => setScannerOpen(true)}
+                variant="outline"
+                size="sm"
+                className="gap-1.5 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10"
+              >
+                <ScanLine className="h-4 w-4" />
+                Scan
               </Button>
             </div>
-
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {showBalance ? `${balance} ETH` : "••••"}
-                  </span>
-                  <Button variant="ghost" size="sm" onClick={() => setShowBalance(!showBalance)} className="p-1">
-                    {showBalance ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                  </Button>
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {showBalance ? balance : "••••"} • {currentChainName}
-                </p>
-              </div>
-
-              {/* ETH Balance Display */}
-              <div className="rounded-lg bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-300/40 dark:border-emerald-600/40 p-3">
-                <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-1">ETH Balance</p>
-                <p className="text-lg font-bold text-foreground">
-                  {showBalance ? `${balance} ETH` : "••••"}
-                </p>
-              </div>
-
-              {/* Send and Receive Buttons */}
-              <div className="flex gap-3">
-                <Button
-                  size="sm"
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
-                  onClick={() => setSendOpen(true)}
-                >
-                  <Send className="h-4 w-4 mr-1" />
-                  Send
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 border-emerald-500/50 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 bg-transparent"
-                  onClick={() => setReceiveOpen(true)}
-                >
-                  <QrCode className="h-4 w-4 mr-1" />
-                  Receive
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content */}
-      <div className="relative z-10 px-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-            <TabsTrigger value="portfolio" className="flex flex-col gap-1 py-3">
-              <Wallet className="h-4 w-4" />
-              <span className="text-xs">Portfolio</span>
-            </TabsTrigger>
-            <TabsTrigger value="carbon" className="flex flex-col gap-1 py-3">
-              <Leaf className="h-4 w-4" />
-              <span className="text-xs">Carbon</span>
-            </TabsTrigger>
-            <TabsTrigger value="defi" className="flex flex-col gap-1 py-3">
-              <TrendingUp className="h-4 w-4" />
-              <span className="text-xs">DeFi</span>
-            </TabsTrigger>
-            <TabsTrigger value="social" className="flex flex-col gap-1 py-3">
-              <Users className="h-4 w-4" />
-              <span className="text-xs">Social</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="portfolio" className="space-y-4">
-            <PortfolioStats portfolioData={portfolioData} />
-
-            <div className="grid grid-cols-2 gap-4">
-              <Card
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-green-200 dark:border-green-800 cursor-pointer hover:bg-white/90 dark:hover:bg-gray-800/90 transition-colors"
-                onClick={() => setActiveTab("scanner")}
-              >
-                <CardContent className="p-4 text-center">
-                  <QrCode className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                  <h3 className="font-semibold text-sm">Connect dApp</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Scan QR code</p>
-                </CardContent>
-              </Card>
-
-              <Card
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-green-200 dark:border-green-800 cursor-pointer hover:bg-white/90 dark:hover:bg-gray-800/90 transition-colors"
-                onClick={() => setActiveTab("carbon-scanner")}
-              >
-                <CardContent className="p-4 text-center">
-                  <Leaf className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                  <h3 className="font-semibold text-sm">Carbon Scanner</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Scan receipts</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <TransactionHistory selectedChain="ethereum" />
-          </TabsContent>
-
-          <TabsContent value="carbon" className="space-y-4">
             <CarbonAnalytics carbonOffset={carbonOffset} />
             <CarbonOffsetHistory />
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="defi" className="space-y-4">
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-green-200 dark:border-green-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
-                  DeFi Portfolio
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-500 dark:text-gray-400 text-center py-8">DeFi features coming soon...</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* ======================= SETTINGS TAB ======================= */}
+        {activeTab === "settings" && (
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-bold text-white">Settings</h2>
+              <p className="text-xs text-white/40">Manajemen wallet &amp; account</p>
+            </div>
 
-          <TabsContent value="social" className="space-y-4">
-            <Card
-              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-green-200 dark:border-green-800 cursor-pointer hover:bg-white/90 dark:hover:bg-gray-800/90 transition-colors"
-              onClick={() => setActiveTab("governance")}
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-white/40">Account</p>
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-green-600 text-white">
+                  <Wallet className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-white">
+                    {accounts[0] ? formatAddress(accounts[0]) : "Not connected"}
+                  </p>
+                  <p className="text-xs text-emerald-400/80">{walletType === "self-custody" ? "Self-Custody" : "Smart Wallet"}</p>
+                </div>
+                <Badge variant="outline" className="gap-1 border-emerald-500/40 text-emerald-300">
+                  <ShieldCheck className="h-3 w-3" />
+                  Secure
+                </Badge>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5">
+              <div className="flex items-center gap-3 px-4 py-3.5">
+                <Globe className="h-4 w-4 text-emerald-400" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-white">Network</p>
+                  <p className="text-xs text-white/40">Ethereum Mainnet (chainId 1)</p>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={disconnect}
+              variant="outline"
+              className="w-full gap-2 border-red-500/40 text-red-400 hover:bg-red-500/10"
             >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-green-600" />
-                  DAO Governance
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  Participate in CarbonFi governance and vote on proposals.
-                </p>
-                <Button className="w-full bg-green-600 hover:bg-green-700">View Proposals</Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              <LogOut className="h-4 w-4" />
+              Disconnect Wallet
+            </Button>
+          </div>
+        )}
       </div>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-white/10 bg-[#0B1210]/90 backdrop-blur-xl">
+        <div className="grid grid-cols-4">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const active = activeTab === item.key
+            return (
+              <button
+                key={item.key}
+                onClick={() => setActiveTab(item.key)}
+                className={`relative flex flex-col items-center gap-1 py-3 transition ${
+                  active ? "text-emerald-400" : "text-white/40 hover:text-white/70"
+                }`}
+              >
+                {active && (
+                  <span className="absolute top-0 h-0.5 w-8 rounded-full bg-emerald-400" />
+                )}
+                <Icon className="h-5 w-5" />
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </nav>
 
       <SendEthDialog open={sendOpen} onOpenChange={setSendOpen} />
       <ReceiveDialog open={receiveOpen} onOpenChange={setReceiveOpen} />
+      {scannerOpen && <QRWalletScanner onBack={() => setScannerOpen(false)} />}
     </div>
   )
 }

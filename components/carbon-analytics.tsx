@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { TrendingUp, Award, Users, Target, Zap } from "lucide-react"
+import { TrendingUp, Award, Users, Target, Zap, Lock } from "lucide-react"
 
 interface CarbonAnalyticsProps {
   carbonOffset: number
@@ -10,20 +10,20 @@ interface CarbonAnalyticsProps {
 
 export function CarbonAnalytics({ carbonOffset }: CarbonAnalyticsProps) {
   const monthlyData = [
-    { month: "Jan", offset: 0.8, color: "bg-carbon-primary" },
-    { month: "Feb", offset: 1.2, color: "bg-carbon-accent" },
-    { month: "Mar", offset: 2.1, color: "bg-carbon-purple" },
-    { month: "Apr", offset: 1.9, color: "bg-carbon-orange" },
-    { month: "May", offset: 2.3, color: "bg-carbon-pink" },
-    { month: "Jun", offset: 4.2, color: "bg-carbon-primary" },
+    { month: "Jan", offset: 0.8, color: "bg-emerald-500" },
+    { month: "Feb", offset: 1.2, color: "bg-teal-500" },
+    { month: "Mar", offset: 2.1, color: "bg-lime-500" },
+    { month: "Apr", offset: 1.9, color: "bg-emerald-400" },
+    { month: "May", offset: 2.3, color: "bg-green-500" },
+    { month: "Jun", offset: 4.2, color: "bg-emerald-500" },
   ]
 
   const leaderboard = [
-    { rank: 1, name: "EcoWarrior", offset: 45.2, badge: "🏆", color: "text-carbon-yellow" },
+    { rank: 1, name: "EcoWarrior", offset: 45.2, badge: "🏆", color: "text-yellow-400" },
     { rank: 2, name: "GreenThumb", offset: 38.7, badge: "🥈", color: "text-gray-300" },
-    { rank: 3, name: "ClimateHero", offset: 32.1, badge: "🥉", color: "text-carbon-orange" },
-    { rank: 4, name: "You", offset: carbonOffset, badge: "🌱", color: "text-carbon-primary" },
-    { rank: 5, name: "EcoFriend", offset: 8.9, badge: "🌿", color: "text-carbon-secondary" },
+    { rank: 3, name: "ClimateHero", offset: 32.1, badge: "🥉", color: "text-orange-400" },
+    { rank: 4, name: "You", offset: carbonOffset, badge: "🌱", color: "text-emerald-400" },
+    { rank: 5, name: "EcoFriend", offset: 8.9, badge: "🌿", color: "text-teal-300" },
   ]
 
   const achievements = [
@@ -32,50 +32,50 @@ export function CarbonAnalytics({ carbonOffset }: CarbonAnalyticsProps) {
       icon: "🌱",
       status: "unlocked",
       description: "Complete your first carbon offset",
-      color: "bg-carbon-primary/10 border-carbon-primary/20",
+      color: "border-emerald-500/30 bg-emerald-500/10",
     },
     {
       title: "Tree Planter",
       icon: "🌳",
       status: "unlocked",
       description: "Offset 10+ tons of CO₂",
-      color: "bg-success/10 border-success/20",
+      color: "border-teal-500/30 bg-teal-500/10",
     },
     {
       title: "Climate Hero",
       icon: "🏆",
       status: "locked",
       description: "Offset 50+ tons of CO₂",
-      color: "bg-dark-surface border-dark-border",
+      color: "border-white/10 bg-white/5",
     },
     {
       title: "Planet Saver",
       icon: "🌍",
       status: "locked",
       description: "Offset 100+ tons of CO₂",
-      color: "bg-dark-surface border-dark-border",
+      color: "border-white/10 bg-white/5",
     },
   ]
 
   return (
     <div className="space-y-4">
       {/* Monthly Progress */}
-      <Card className="bg-dark-card border-dark-border">
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center space-x-2 text-white">
-            <TrendingUp className="w-6 h-6 text-carbon-primary" />
-            <span>Monthly Progress</span>
+      <Card className="border border-white/10 bg-white/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base text-white">
+            <TrendingUp className="h-5 w-5 text-emerald-400" />
+            Monthly Progress
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {monthlyData.map((data, index) => (
+            {monthlyData.map((data) => (
               <div key={data.month} className="flex items-center justify-between">
-                <span className="text-sm font-semibold w-10 text-white">{data.month}</span>
-                <div className="flex-1 mx-4">
-                  <Progress value={(data.offset / 5) * 100} className="h-3 bg-dark-surface" />
+                <span className="w-10 text-sm font-semibold text-white">{data.month}</span>
+                <div className="mx-4 flex-1">
+                  <Progress value={(data.offset / 5) * 100} className="h-2.5 bg-white/10" />
                 </div>
-                <span className="text-sm text-carbon-accent font-semibold w-12 text-right">{data.offset}t</span>
+                <span className="w-12 text-right text-sm font-semibold text-emerald-300">{data.offset}t</span>
               </div>
             ))}
           </div>
@@ -83,11 +83,11 @@ export function CarbonAnalytics({ carbonOffset }: CarbonAnalyticsProps) {
       </Card>
 
       {/* Achievements */}
-      <Card className="bg-dark-card border-dark-border">
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center space-x-2 text-white">
-            <Award className="w-6 h-6 text-carbon-yellow" />
-            <span>Achievements</span>
+      <Card className="border border-white/10 bg-white/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base text-white">
+            <Award className="h-5 w-5 text-yellow-400" />
+            Achievements
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -95,19 +95,22 @@ export function CarbonAnalytics({ carbonOffset }: CarbonAnalyticsProps) {
             {achievements.map((achievement, index) => (
               <div
                 key={index}
-                className={`text-center p-4 rounded-xl border transition-all duration-300 hover:scale-105 ${achievement.color} ${
-                  achievement.status === "unlocked" ? "cursor-pointer" : "opacity-50"
+                className={`rounded-xl border p-4 text-center transition hover:scale-105 ${achievement.color} ${
+                  achievement.status === "locked" ? "opacity-60" : ""
                 }`}
               >
-                <div className="text-3xl mb-2">{achievement.icon}</div>
-                <p className="text-sm font-semibold text-white mb-1">{achievement.title}</p>
-                <p className="text-xs text-dark-muted">{achievement.description}</p>
+                <div className="mb-2 text-3xl">{achievement.icon}</div>
+                <p className="mb-1 text-sm font-semibold text-white">{achievement.title}</p>
+                <p className="text-xs text-white/40">{achievement.description}</p>
                 {achievement.status === "unlocked" && (
-                  <div className="mt-2">
-                    <span className="text-xs bg-carbon-primary text-dark-bg px-2 py-1 rounded-full font-semibold">
-                      Unlocked
-                    </span>
-                  </div>
+                  <span className="mt-2 inline-block rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                    Unlocked
+                  </span>
+                )}
+                {achievement.status === "locked" && (
+                  <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/40">
+                    <Lock className="h-2.5 w-2.5" /> Locked
+                  </span>
                 )}
               </div>
             ))}
@@ -116,36 +119,36 @@ export function CarbonAnalytics({ carbonOffset }: CarbonAnalyticsProps) {
       </Card>
 
       {/* Community Leaderboard */}
-      <Card className="bg-dark-card border-dark-border">
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center space-x-2 text-white">
-            <Users className="w-6 h-6 text-carbon-purple" />
-            <span>Community Leaderboard</span>
+      <Card className="border border-white/10 bg-white/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base text-white">
+            <Users className="h-5 w-5 text-teal-400" />
+            Community Leaderboard
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {leaderboard.map((user) => (
               <div
                 key={user.rank}
-                className={`flex items-center justify-between p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
+                className={`flex items-center justify-between rounded-xl p-3.5 transition hover:scale-[1.02] ${
                   user.name === "You"
-                    ? "bg-gradient-to-r from-carbon-primary/10 to-carbon-accent/10 border border-carbon-primary/20"
-                    : "bg-dark-surface border border-dark-border"
+                    ? "border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 to-teal-500/10"
+                    : "border border-white/10 bg-white/5"
                 }`}
               >
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center gap-3">
                   <div className="text-2xl">{user.badge}</div>
                   <div>
-                    <p className={`font-semibold ${user.name === "You" ? "text-carbon-primary" : "text-white"}`}>
+                    <p className={`text-sm font-semibold ${user.name === "You" ? "text-emerald-400" : "text-white"}`}>
                       {user.name}
                     </p>
-                    <p className="text-xs text-dark-muted">#{user.rank} Global Rank</p>
+                    <p className="text-xs text-white/40">#{user.rank} Global Rank</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-lg text-white">{user.offset}t</p>
-                  <p className="text-xs text-carbon-accent">CO₂ offset</p>
+                  <p className="text-lg font-bold text-white">{user.offset}t</p>
+                  <p className="text-xs text-emerald-300">CO₂ offset</p>
                 </div>
               </div>
             ))}
@@ -155,18 +158,18 @@ export function CarbonAnalytics({ carbonOffset }: CarbonAnalyticsProps) {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 gap-3">
-        <Card className="bg-gradient-to-br from-carbon-primary/10 to-carbon-secondary/10 border-carbon-primary/20">
+        <Card className="border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-transparent">
           <CardContent className="p-4 text-center">
-            <Target className="w-8 h-8 text-carbon-primary mx-auto mb-2" />
+            <Target className="mx-auto mb-2 h-7 w-7 text-emerald-400" />
             <p className="text-2xl font-bold text-white">25%</p>
-            <p className="text-xs text-carbon-primary">Goal Progress</p>
+            <p className="text-xs text-emerald-300">Goal Progress</p>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-carbon-accent/10 to-carbon-purple/10 border-carbon-accent/20">
+        <Card className="border border-teal-500/20 bg-gradient-to-br from-teal-500/10 to-transparent">
           <CardContent className="p-4 text-center">
-            <Zap className="w-8 h-8 text-carbon-accent mx-auto mb-2" />
+            <Zap className="mx-auto mb-2 h-7 w-7 text-teal-300" />
             <p className="text-2xl font-bold text-white">7</p>
-            <p className="text-xs text-carbon-accent">Day Streak</p>
+            <p className="text-xs text-teal-300">Day Streak</p>
           </CardContent>
         </Card>
       </div>
