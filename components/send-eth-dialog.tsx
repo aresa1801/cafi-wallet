@@ -39,15 +39,15 @@ export function SendEthDialog({ open, onOpenChange }: SendEthDialogProps) {
   const handleSend = async () => {
     setError(null)
     if (!ethers.isAddress(to)) {
-      setError("Alamat tujuan tidak valid")
+      setError("Invalid destination address")
       return
     }
     if (!amount || Number.parseFloat(amount) <= 0) {
-      setError("Masukkan jumlah ETH yang valid")
+      setError("Enter a valid ETH amount")
       return
     }
     if (Number.parseFloat(amount) > Number.parseFloat(balance || "0")) {
-      setError("Saldo tidak mencukupi")
+      setError("Insufficient balance")
       return
     }
 
@@ -61,7 +61,7 @@ export function SendEthDialog({ open, onOpenChange }: SendEthDialogProps) {
         onOpenChange(false)
       }, 3000)
     } catch (e: any) {
-      setError(e?.message?.includes("rejected") ? "Transaksi dibatalkan" : (e?.message ?? "Gagal mengirim"))
+      setError(e?.message?.includes("rejected") ? "Transaction rejected" : (e?.message ?? "Failed to send"))
     } finally {
       setSending(false)
     }
@@ -71,14 +71,14 @@ export function SendEthDialog({ open, onOpenChange }: SendEthDialogProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Kirim ETH</DialogTitle>
-          <DialogDescription>Kirim Ether ke alamat Ethereum mana pun di Mainnet.</DialogDescription>
+          <DialogTitle>Send ETH</DialogTitle>
+          <DialogDescription>Send Ether to any Ethereum address on Mainnet.</DialogDescription>
         </DialogHeader>
 
         {txHash ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <CheckCircle2 className="h-12 w-12 text-emerald-500 mb-3" />
-            <p className="font-semibold">Transaksi terkirim!</p>
+            <p className="font-semibold">Transaction sent!</p>
             <a
               href={`https://etherscan.io/tx/${txHash}`}
               target="_blank"
@@ -91,7 +91,7 @@ export function SendEthDialog({ open, onOpenChange }: SendEthDialogProps) {
         ) : (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="to">Alamat tujuan</Label>
+              <Label htmlFor="to">Recipient address</Label>
               <Input
                 id="to"
                 placeholder="0x..."
@@ -102,9 +102,9 @@ export function SendEthDialog({ open, onOpenChange }: SendEthDialogProps) {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="amount">Jumlah (ETH)</Label>
+                <Label htmlFor="amount">Amount (ETH)</Label>
                 <span className="text-xs text-muted-foreground">
-                  Saldo: {Number.parseFloat(balance || "0").toFixed(4)} ETH
+                  Balance: {Number.parseFloat(balance || "0").toFixed(4)} ETH
                 </span>
               </div>
               <Input
@@ -131,7 +131,7 @@ export function SendEthDialog({ open, onOpenChange }: SendEthDialogProps) {
 
             <Button onClick={handleSend} disabled={sending || !isConnected} className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              {sending ? "Mengirim..." : "Kirim ETH"}
+              {sending ? "Sending..." : "Send ETH"}
             </Button>
           </div>
         )}

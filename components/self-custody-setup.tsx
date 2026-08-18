@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Shield, ArrowLeft, Copy, Eye, EyeOff, RefreshCw, Loader2, PlusCircle, Import } from "lucide-react"
+import { Shield, ArrowLeft, Copy, Eye, EyeOff, Loader2, PlusCircle, Import } from "lucide-react"
 import { ethers } from "ethers"
 import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
 
@@ -25,6 +25,10 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
   const [error, setError] = useState<string | null>(null)
   const { connectPrivateKey } = useCarbonFiWeb3()
 
+  const importStep = step === "import"
+  const keyToUse = importStep ? importedKey : privateKey
+  const isReady = importStep ? importedKey.trim().startsWith("0x") : privateKey.length > 0
+
   const handleGenerate = () => {
     setError(null)
     const wallet = ethers.Wallet.createRandom()
@@ -38,7 +42,7 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
     setConnecting(true)
     try {
       const key = importStep ? importedKey : privateKey
-      if (!key) throw new Error("Private key kosong")
+      if (!key) throw new Error("Private key is empty")
       await connectPrivateKey(key)
       onComplete({ type: "self-custody", connectedVia: "private-key" })
     } catch (e: any) {
@@ -47,10 +51,6 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
       setConnecting(false)
     }
   }
-
-  const importStep = step === "import"
-  const keyToUse = importStep ? importedKey : privateKey
-  const isReady = importStep ? importedKey.trim().startsWith("0x") : privateKey.length > 0
 
   const handleCopy = () => {
     navigator.clipboard.writeText(keyToUse)
@@ -75,7 +75,7 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
             disabled={connecting}
             className="gap-1.5 text-white/60 hover:bg-white/10 hover:text-white"
           >
-            <ArrowLeft className="h-4 w-4" /> Kembali
+            <ArrowLeft className="h-4 w-4" /> Back
           </Button>
           <Badge variant="outline" className="gap-1.5 border-emerald-500/40 text-emerald-300">
             <Shield className="h-3.5 w-3.5" /> Self-Custody
@@ -85,7 +85,7 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
         <div className="pt-4">
           <h1 className="text-2xl font-bold tracking-tight text-white">Self-Custody Wallet</h1>
           <p className="mt-1 text-sm text-white/50">
-            Kamu memegang penuh kunci dompet. Simpan private key dengan aman — tidak bisa dipulihkan jika hilang.
+            You fully control your wallet keys. Keep your private key safe — it cannot be recovered if lost.
           </p>
         </div>
 
@@ -107,8 +107,8 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
                     <PlusCircle className="h-6 w-6 text-white" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-semibold text-white">Buat wallet baru</div>
-                    <div className="text-xs text-white/50">Generasi private key asli via ethers (BIP-39)</div>
+                    <div className="font-semibold text-white">Create a new wallet</div>
+                    <div className="text-xs text-white/50">Generates a real private key via ethers (BIP-39)</div>
                   </div>
                 </div>
               </button>
@@ -125,8 +125,8 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
                     <Import className="h-6 w-6 text-white" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-semibold text-white">Impor wallet</div>
-                    <div className="text-xs text-white/50">Masukkan private key yang sudah ada</div>
+                    <div className="font-semibold text-white">Import an existing wallet</div>
+                    <div className="text-xs text-white/50">Enter an existing private key</div>
                   </div>
                 </div>
               </button>
@@ -137,7 +137,7 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
             <div className="rounded-2xl border border-emerald-500/20 bg-white/5 p-5 backdrop-blur">
               <div className="mb-4">
                 <h2 className="text-base font-semibold text-white">
-                  {importStep ? "Impor Private Key" : "Private Key Baru"}
+                  {importStep ? "Import Private Key" : "New Private Key"}
                 </h2>
               </div>
 
@@ -159,7 +159,7 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
                         onClick={handleCopy}
                         className="h-6 gap-1 px-2 text-xs text-emerald-300 hover:bg-emerald-500/10"
                       >
-                        <Copy className="h-3 w-3" /> {copied ? "Tersalin" : "Salin"}
+                        <Copy className="h-3 w-3" /> {copied ? "Copied" : "Copy"}
                       </Button>
                     )}
                   </div>
@@ -194,7 +194,7 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
 
                 {!importStep && (
                   <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-300">
-                    ⚠️ Jangan bagikan private key ini ke siapa pun. Simpan di tempat aman (password manager).
+                    ⚠️ Never share this private key with anyone. Store it somewhere safe (password manager).
                   </div>
                 )}
 
@@ -204,7 +204,7 @@ export function SelfCustodySetup({ onComplete, onBack }: SelfCustodySetupProps) 
                   disabled={!isReady || connecting}
                 >
                   {connecting && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {importStep ? "Impor & Hubungkan" : "Hubungkan Wallet"}
+                  {importStep ? "Import & Connect" : "Connect Wallet"}
                 </Button>
               </div>
             </div>

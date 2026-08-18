@@ -268,7 +268,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
                 {carbonOffset} <span className="text-sm font-medium text-emerald-300">ton CO₂</span>
               </p>
               <p className="mt-1 text-xs text-white/50">
-                Offset karbon lewat dMRV &amp; verifikasi Athlas Verity
+                Offset carbon through dMRV &amp; Athlas Verity verification
               </p>
             </div>
           </>
@@ -279,7 +279,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
           <div className="space-y-4">
             <div>
               <h2 className="text-lg font-bold text-white">Activity</h2>
-              <p className="text-xs text-white/40">Riwayat transaksi Ethereum Mainnet</p>
+              <p className="text-xs text-white/40">Ethereum Mainnet transaction history</p>
             </div>
             <TransactionHistory selectedChain="ethereum" />
           </div>
@@ -291,7 +291,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-white">Carbon Hub</h2>
-                <p className="text-xs text-white/40">Offset &amp; verifikasi karbon</p>
+                <p className="text-xs text-white/40">Offset &amp; verify carbon</p>
               </div>
               <Button
                 onClick={() => setScannerOpen(true)}

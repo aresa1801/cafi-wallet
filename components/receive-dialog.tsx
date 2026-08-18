@@ -30,8 +30,8 @@ export function ReceiveDialog({ open, onOpenChange }: ReceiveDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Terima ETH</DialogTitle>
-          <DialogDescription>Bagikan alamat ini untuk menerima Ether di Ethereum Mainnet.</DialogDescription>
+          <DialogTitle>Receive ETH</DialogTitle>
+          <DialogDescription>Share this address to receive Ether on the Ethereum Mainnet.</DialogDescription>
         </DialogHeader>
 
         {isConnected && address ? (
@@ -42,13 +42,13 @@ export function ReceiveDialog({ open, onOpenChange }: ReceiveDialogProps) {
             <p className="text-xs text-muted-foreground text-center break-all font-mono">{address}</p>
             <Button onClick={handleCopy} variant="outline" className="w-full gap-2">
               {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-              {copied ? "Tersalin!" : "Salin alamat"}
+              {copied ? "Copied!" : "Copy address"}
             </Button>
           </div>
         ) : (
           <div className="py-6 text-center text-sm text-muted-foreground">
-            <p>Wallet belum terhubung.</p>
-            <p className="mt-1 text-xs">Hubungkan wallet terlebih dahulu untuk melihat alamat.</p>
+            <p>Wallet not connected.</p>
+            <p className="mt-1 text-xs">Connect a wallet first to see your address.</p>
           </div>
         )}
       </DialogContent>

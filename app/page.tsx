@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { SplashScreen } from "@/components/splash-screen"
 import { MobileLoginScreen } from "@/components/mobile-login-screen"
 import { SelfCustodySetup } from "@/components/self-custody-setup"
@@ -13,32 +13,7 @@ export default function CarbonFiWallet() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [walletType, setWalletType] = useState<"smart" | "self-custody" | null>(null)
   const [walletInfo, setWalletInfo] = useState<any>(null)
-  const [isMobile, setIsMobile] = useState(false)
   const [showSetup, setShowSetup] = useState(false)
-
-  // Optional preview mode: bypass splash/login to show the dashboard directly.
-  // Usage: /?preview=dashboard
-  const [preview] = useState(() =>
-    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("preview") : null
-  )
-
-  useEffect(() => {
-    if (preview === "dashboard") {
-      setIsLoggedIn(true)
-      setWalletType("self-custody")
-      setWalletInfo({ type: "self-custody", connectedVia: "preview" })
-      setShowSplash(false)
-    }
-  }, [preview])
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768 || /Android|webOS|iPhone|iPad|IEMobile|Opera Mini/i.test(navigator.userAgent))
-    }
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
 
   const handleLogin = (type: "smart" | "self-custody", info?: any) => {
     setWalletType(type)
@@ -61,26 +36,23 @@ export default function CarbonFiWallet() {
     setWalletType(null)
   }
 
+  let screen
   if (showSplash) {
-    return <SplashScreen onComplete={() => setShowSplash(false)} />
-  }
-
-  if (showSetup) {
-    return <SelfCustodySetup onComplete={handleSetupComplete} onBack={handleBackFromSetup} />
-  }
-
-  if (!isLoggedIn) {
-    return (
-      <CarbonFiWeb3Provider>
-        <MobileLoginScreen onLogin={handleLogin} onOpenSetup={() => setShowSetup(true)} />
-      </CarbonFiWeb3Provider>
+    screen = <SplashScreen onComplete={() => setShowSplash(false)} />
+  } else if (showSetup) {
+    screen = <SelfCustodySetup onComplete={handleSetupComplete} onBack={handleBackFromSetup} />
+  } else if (!isLoggedIn) {
+    screen = <MobileLoginScreen onLogin={handleLogin} onOpenSetup={() => setShowSetup(true)} />
+  } else {
+    screen = (
+      <>
+        <MobileWalletDashboard walletType={walletType!} walletInfo={walletInfo} />
+        <Web3RequestModal />
+      </>
     )
   }
 
-  return (
-    <CarbonFiWeb3Provider>
-      <MobileWalletDashboard walletType={walletType!} walletInfo={walletInfo} />
-      <Web3RequestModal />
-    </CarbonFiWeb3Provider>
-  )
+  // Single provider wraps the ENTIRE app so every screen
+  // (login, self-custody setup, dashboard) has web3 context.
+  return <CarbonFiWeb3Provider>{screen}</CarbonFiWeb3Provider>
 }

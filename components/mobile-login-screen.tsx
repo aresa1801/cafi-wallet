@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Shield, Leaf, Zap, ArrowRight, Loader2, KeyRound, Chrome, Sparkles } from "lucide-react"
+import { Leaf, Shield, Zap, ArrowRight, Loader2, KeyRound, Smartphone, Wallet } from "lucide-react"
 import { useCarbonFiWeb3 } from "@/hooks/use-carbonfi-web3"
+import { SmartWalletGoogle } from "@/components/smart-wallet-google"
 
 interface MobileLoginScreenProps {
   onLogin: (type: "smart" | "self-custody", info?: any) => void
@@ -14,32 +14,17 @@ interface MobileLoginScreenProps {
 export function MobileLoginScreen({ onLogin, onOpenSetup }: MobileLoginScreenProps) {
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { connectInjected } = useCarbonFiWeb3()
-
-  const handleInjectedConnect = async () => {
-    setError(null)
-    setIsConnecting(true)
-    try {
-      await connectInjected()
-      onLogin("smart", { type: "smart", connectedVia: "injected" })
-    } catch (e: any) {
-      const msg = e?.message ?? String(e)
-      if (msg.includes("No injected")) {
-        setError("Tidak ada Web3 wallet terpasang. Install MetaMask / Rabby, atau pakai Self-Custody wallet.")
-      } else if (msg.includes("rejected") || msg.includes("denied")) {
-        setError("Koneksi dibatalkan oleh pengguna.")
-      } else {
-        setError(msg)
-      }
-    } finally {
-      setIsConnecting(false)
-    }
-  }
+  const [showGoogle, setShowGoogle] = useState(false)
+  const { connectSmartWallet } = useCarbonFiWeb3()
 
   const handleSelfCustody = () => {
     setError(null)
     onLogin("self-custody", { setupRequired: true })
     onOpenSetup?.()
+  }
+
+  const handleGoogleConnected = (email: string) => {
+    onLogin("smart", { type: "smart", connectedVia: "google", email })
   }
 
   return (
@@ -71,99 +56,96 @@ export function MobileLoginScreen({ onLogin, onOpenSetup }: MobileLoginScreenPro
         {/* Hero */}
         <div className="mb-6">
           <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300">
-            <Sparkles className="h-3.5 w-3.5" />
+            <Wallet className="h-3.5 w-3.5" />
             Web3 Carbon Wallet
           </div>
           <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-white">
-            Kelola aset &
+            Manage assets &amp;
             <br />
-            offset <span className="bg-gradient-to-r from-emerald-400 to-lime-300 bg-clip-text text-transparent">karbon</span>
+            offset <span className="bg-gradient-to-r from-emerald-400 to-lime-300 bg-clip-text text-transparent">carbon</span>
             <br />
-            dalam satu dompet 🌿
+            in one wallet 🌿
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-white/50">
-            Dompet Web3 asli untuk CarbonFi &amp; Athlas Verity. Karbon, NFT, dan aset digital di Ethereum Mainnet.
+            The real Web3 wallet for CarbonFi &amp; Athlas Verity. Carbon, NFTs and digital assets on the Ethereum
+            Mainnet.
           </p>
         </div>
 
-        {/* Feature pills */}
-        <div className="mb-8 flex flex-wrap gap-2">
-          <span className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-[11px] text-white/60 ring-1 ring-white/10">
-            <Leaf className="h-3.5 w-3.5 text-emerald-400" /> Carbon Offset
-          </span>
-          <span className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-[11px] text-white/60 ring-1 ring-white/10">
-            <Zap className="h-3.5 w-3.5 text-emerald-400" /> Fast &amp; Secure
-          </span>
-          <span className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-[11px] text-white/60 ring-1 ring-white/10">
-            <Shield className="h-3.5 w-3.5 text-emerald-400" /> Self-Custody
-          </span>
-        </div>
+        {/* Create new wallet CTA */}
+        <div className="mb-6">
+          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-white/40">Create a new wallet</p>
 
-        {/* Wallet options */}
-        <div className="mt-auto">
-          {error && (
-            <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-300">
-              {error}
-            </div>
-          )}
-
+          {/* Smart Wallet — Google Auth (primary) */}
           <button
-            onClick={handleInjectedConnect}
-            disabled={isConnecting}
-            className="group mb-3 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left backdrop-blur transition hover:border-emerald-500/40 hover:bg-white/10 disabled:opacity-60"
+            onClick={() => setShowGoogle(true)}
+            className="group mb-3 w-full rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/15 to-teal-500/10 p-4 text-left backdrop-blur transition hover:border-emerald-400/70 hover:from-emerald-500/25"
           >
             <div className="flex items-center gap-3.5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-amber-600 shadow-lg shadow-orange-500/20">
-                {isConnecting ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-white" />
-                ) : (
-                  <Chrome className="h-5 w-5 text-white" />
-                )}
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 shadow-lg shadow-emerald-500/25">
+                <Smartphone className="h-5 w-5 text-white" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 font-semibold text-white">
-                  MetaMask / Rabby
+                  Smart Wallet
+                  <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-300">
+                    Google
+                  </span>
                   <ArrowRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-emerald-300" />
                 </div>
-                <div className="text-xs text-white/40">Hubungkan dompet Web3 yang terpasang</div>
+                <div className="text-xs text-white/40">Continue with Google to create &amp; access your wallet</div>
               </div>
             </div>
           </button>
 
+          {/* Self Custody Wallet */}
           <button
             onClick={handleSelfCustody}
             disabled={isConnecting}
-            className="group mb-3 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left backdrop-blur transition hover:border-emerald-500/40 hover:bg-white/10 disabled:opacity-60"
+            className="group w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left backdrop-blur transition hover:border-emerald-500/40 hover:bg-white/10 disabled:opacity-60"
           >
             <div className="flex items-center gap-3.5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 shadow-lg shadow-emerald-500/20">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 shadow-lg shadow-teal-500/20">
                 <KeyRound className="h-5 w-5 text-white" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 font-semibold text-white">
                   Self-Custody Wallet
-                  <ArrowRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-emerald-300" />
+                  {isConnecting ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-white/40" />
+                  ) : (
+                    <ArrowRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-emerald-300" />
+                  )}
                 </div>
-                <div className="text-xs text-white/40">Buat atau impor dengan private key</div>
+                <div className="text-xs text-white/40">Create or import with a private key</div>
               </div>
             </div>
           </button>
+        </div>
 
-          <div className="mt-4 flex items-center justify-center gap-3 text-[11px] text-white/30">
+        {/* Errors */}
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-300">
+            {error}
+          </div>
+        )}
+
+        <div className="mt-auto">
+          <div className="mb-4 flex items-center justify-center gap-3 text-[11px] text-white/30">
             <div className="h-px flex-1 bg-white/10" />
-            Hanya Ethereum Mainnet
+            Only Ethereum Mainnet
             <div className="h-px flex-1 bg-white/10" />
           </div>
 
-          <Button
-            variant="ghost"
-            className="mt-4 w-full gap-1.5 text-emerald-300/80 hover:bg-emerald-500/10 hover:text-emerald-300"
-          >
-            <Leaf className="h-4 w-4" />
-            Tentang CarbonFi
-          </Button>
+          <div className="text-center text-[11px] text-white/30">
+            By continuing, you agree to the CarbonFi{" "}
+            <span className="text-emerald-400/70">Terms of Service</span> and{" "}
+            <span className="text-emerald-400/70">Privacy Policy</span>
+          </div>
         </div>
       </div>
+
+      <SmartWalletGoogle open={showGoogle} onOpenChange={setShowGoogle} onConnected={handleGoogleConnected} />
     </div>
   )
 }

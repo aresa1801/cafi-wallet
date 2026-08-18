@@ -43,6 +43,7 @@ export interface CarbonFiWeb3ContextType {
   // Actions
   connectInjected: () => Promise<void>
   connectPrivateKey: (privateKey: string) => Promise<void>
+  connectSmartWallet: (identifier: string, name?: string) => Promise<void>
   connect: () => Promise<void>
   disconnect: () => void
   sendTransaction: (to: string, value: string, data?: string) => Promise<string>
@@ -221,6 +222,40 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const connectSmartWallet = useCallback(async (identifier: string, name?: string) => {
+    try {
+      // Deterministically derive a private key from the Google user identifier (sub/email).
+      // This gives the same Ethereum address every time for the same Google account.
+      const keyBytes = new TextEncoder().encode("carbonfi:smart-wallet:" + identifier)
+      const digest = await crypto.subtle.digest("SHA-256", keyBytes)
+      const hex = Array.from(new Uint8Array(digest))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("")
+      const privateKey = "0x" + hex
+      const wallet = new ethers.Wallet(privateKey)
+      const addr = wallet.address.toLowerCase()
+      const rpcProvider = await createEthProvider()
+      const signer = wallet.connect(rpcProvider)
+
+      setAccounts([addr])
+      setChainId("0x1")
+      setProvider(null)
+      setSigner(signer)
+      setIsConnected(true)
+      setWalletInfo({
+        type: "smart",
+        address: addr,
+        balance: "",
+        network: "Ethereum Mainnet",
+        connectedVia: "injected",
+      })
+      refreshBalance()
+    } catch (error) {
+      console.error("Smart wallet connection failed:", error)
+      throw error
+    }
+  }, [])
+
   const connect = useCallback(async () => {
     // Try injected wallet first
     if (win?.ethereum) {
@@ -319,6 +354,7 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
     connect,
     connectInjected,
     connectPrivateKey,
+    connectSmartWallet,
     disconnect,
     sendTransaction,
     sendERC20,
