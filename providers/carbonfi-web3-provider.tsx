@@ -62,9 +62,10 @@ export const CarbonFiWeb3Context = createContext<CarbonFiWeb3ContextType | undef
 
 const RPC_URLS = [
   process.env.NEXT_PUBLIC_ETH_RPC_URL,
-  "https://eth.llamarpc.com",
-  "https://rpc.ankr.com/eth",
   "https://ethereum.publicnode.com",
+  "https://eth.drpc.org",
+  "https://rpc.ankr.com/eth",
+  "https://eth.llamarpc.com",
   "https://1rpc.io/eth",
 ].filter((url): url is string => typeof url === "string" && url.length > 0)
 
