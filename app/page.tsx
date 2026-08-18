@@ -16,6 +16,21 @@ export default function CarbonFiWallet() {
   const [isMobile, setIsMobile] = useState(false)
   const [showSetup, setShowSetup] = useState(false)
 
+  // Optional preview mode: bypass splash/login to show the dashboard directly.
+  // Usage: /?preview=dashboard
+  const [preview] = useState(() =>
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("preview") : null
+  )
+
+  useEffect(() => {
+    if (preview === "dashboard") {
+      setIsLoggedIn(true)
+      setWalletType("self-custody")
+      setWalletInfo({ type: "self-custody", connectedVia: "preview" })
+      setShowSplash(false)
+    }
+  }, [preview])
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768 || /Android|webOS|iPhone|iPad|IEMobile|Opera Mini/i.test(navigator.userAgent))
