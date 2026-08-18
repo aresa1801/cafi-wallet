@@ -53,6 +53,12 @@ export interface CarbonFiWeb3ContextType {
   rejectRequest: (requestId: string) => void
   refreshBalance: () => Promise<void>
 
+  // On-chain asset reads (real)
+  getTokenBalances: (address: string) => Promise<{ ETH: string; CAFI: string; USDT: string }>
+  getNFTs: (
+    address: string,
+  ) => Promise<{ contract: string; name: string; symbol: string; count: number; tokenIds: string[] }>
+
   // dApp connection
   connectedDApp: string | null
   setConnectedDApp: (dapp: string | null) => void
@@ -91,6 +97,29 @@ const ETHEREUM_MAINNET = {
   rpcUrls: RPC_URLS,
   blockExplorerUrls: ["https://etherscan.io/"],
 }
+
+// CarbonFi on-chain assets (Ethereum Mainnet)
+export const CARBONFI_TOKENS = {
+  ETH: { symbol: "ETH", name: "Ethereum", decimals: 18, address: null },
+  CAFI: { symbol: "CAFI", name: "CarbonFi Token", decimals: 18, address: "0x98a64B25545e54050C6c76301C9c6DB792A0819C" },
+  USDT: { symbol: "USDT", name: "Tether USD", decimals: 6, address: "0xdAC17F958D2ee523a2206206994597C13D831ec7" },
+} as const
+
+export const CARBONFI_NFT_CONTRACT = "0x50987200Bb1BFb56939eb7b8965c3033d7e82Cf8"
+
+const ERC20_ABI = [
+  "function balanceOf(address owner) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+  "function symbol() view returns (string)",
+]
+
+const ERC721_ABI = [
+  "function balanceOf(address owner) view returns (uint256)",
+  "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)",
+  "function tokenURI(uint256 tokenId) view returns (string)",
+  "function name() view returns (string)",
+  "function symbol() view returns (string)",
+]
 
 const isEthereumMainnet = (chainId: string) => chainId === "0x1"
 
@@ -330,6 +359,71 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
     [signer],
   )
 
+  const getTokenBalances = useCallback(
+    async (address: string): Promise<{ ETH: string; CAFI: string; USDT: string }> => {
+      const result = { ETH: "0", CAFI: "0", USDT: "0" }
+      try {
+        const rpc = await createEthProvider()
+        const ethBal = await rpc.getBalance(address)
+        result.ETH = ethers.formatEther(ethBal)
+
+        // ERC20 balances
+        for (const key of ["CAFI", "USDT"] as const) {
+          const t = CARBONFI_TOKENS[key]
+          try {
+            const c = new ethers.Contract(t.address!, ERC20_ABI, rpc)
+            const bal = await c.balanceOf(address)
+            result[key] = ethers.formatUnits(bal, t.decimals)
+          } catch (e) {
+            console.warn(`Failed to read ${key} balance:`, e)
+          }
+        }
+      } catch (e) {
+        console.error("Failed to read token balances:", e)
+      }
+      return result
+    },
+    [],
+  )
+
+  const getNFTs = useCallback(
+    async (
+      address: string,
+    ): Promise<{ contract: string; name: string; symbol: string; count: number; tokenIds: string[] }> => {
+      const empty = {
+        contract: CARBONFI_NFT_CONTRACT,
+        name: "CarbonFi NFT",
+        symbol: "CAFI-NFT",
+        count: 0,
+        tokenIds: [],
+      }
+      try {
+        const rpc = await createEthProvider()
+        const nft = new ethers.Contract(CARBONFI_NFT_CONTRACT, ERC721_ABI, rpc)
+        const bal = await nft.balanceOf(address)
+        const count = Number(bal)
+        let name = "CarbonFi NFT",
+          symbol = "CAFI-NFT"
+        try {
+          name = await nft.name()
+          symbol = await nft.symbol()
+        } catch {}
+        const tokenIds: string[] = []
+        for (let i = 0; i < count && i < 50; i++) {
+          try {
+            const id = await nft.tokenOfOwnerByIndex(address, i)
+            tokenIds.push(id.toString())
+          } catch {}
+        }
+        return { contract: CARBONFI_NFT_CONTRACT, name, symbol, count, tokenIds }
+      } catch (e) {
+        console.error("Failed to read NFTs:", e)
+        return empty
+      }
+    },
+    [],
+  )
+
   const approveRequest = useCallback(
     async (requestId: string) => {
       const request = pendingRequests.find((r) => r.id === requestId)
@@ -363,6 +457,8 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
     approveRequest,
     rejectRequest,
     refreshBalance,
+    getTokenBalances,
+    getNFTs,
     connectedDApp,
     setConnectedDApp,
   }

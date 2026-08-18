@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -50,12 +50,48 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
   const [receiveOpen, setReceiveOpen] = useState(false)
   const [scannerOpen, setScannerOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [tokenBalances, setTokenBalances] = useState<{ ETH: string; CAFI: string; USDT: string }>({
+    ETH: "0",
+    CAFI: "0",
+    USDT: "0",
+  })
+  const [nftInfo, setNftInfo] = useState<{ count: number; name: string; symbol: string; tokenIds: string[] }>({
+    count: 0,
+    name: "CarbonFi NFT",
+    symbol: "CAFI-NFT",
+    tokenIds: [],
+  })
+  const [assetsLoaded, setAssetsLoaded] = useState(false)
 
-  const { isConnected, accounts, balance, refreshBalance, disconnect } = useCarbonFiWeb3()
+  const { isConnected, accounts, balance, refreshBalance, disconnect, getTokenBalances, getNFTs } =
+    useCarbonFiWeb3()
+
+  // Load real on-chain token balances + NFTs when connected
+  useEffect(() => {
+    if (isConnected && accounts[0]) {
+      setAssetsLoaded(false)
+      getTokenBalances(accounts[0])
+        .then(setTokenBalances)
+        .finally(() => setAssetsLoaded(true))
+      getNFTs(accounts[0])
+        .then((info) =>
+          setNftInfo({ count: info.count, name: info.name, symbol: info.symbol, tokenIds: info.tokenIds }),
+        )
+        .catch(() => {})
+    }
+  }, [isConnected, accounts, getTokenBalances, getNFTs])
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
     await refreshBalance()
+    if (accounts[0]) {
+      getTokenBalances(accounts[0]).then(setTokenBalances)
+      getNFTs(accounts[0])
+        .then((info) =>
+          setNftInfo({ count: info.count, name: info.name, symbol: info.symbol, tokenIds: info.tokenIds }),
+        )
+        .catch(() => {})
+    }
     setTimeout(() => setIsRefreshing(false), 1000)
   }
 
@@ -242,7 +278,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-white">{showBalance ? balance : "••••"}</p>
-                  <p className="text-xs text-white/40">— USD</p>
+                  <p className="text-xs text-white/40">ETH</p>
                 </div>
               </button>
               <div className="flex w-full items-center gap-3 border-t border-white/5 px-4 py-3.5">
@@ -254,8 +290,10 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
                   <p className="text-xs text-white/40">CAFI</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-white">0</p>
-                  <p className="text-xs text-white/40">— USD</p>
+                  <p className="text-sm font-semibold text-white">
+                    {showBalance ? Number(tokenBalances.CAFI).toFixed(2) : "••••"}
+                  </p>
+                  <p className="text-xs text-white/40">CAFI</p>
                 </div>
               </div>
               <div className="flex w-full items-center gap-3 border-t border-white/5 px-4 py-3.5">
@@ -267,8 +305,10 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
                   <p className="text-xs text-white/40">USDT</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-white">0</p>
-                  <p className="text-xs text-white/40">— USD</p>
+                  <p className="text-sm font-semibold text-white">
+                    {showBalance ? Number(tokenBalances.USDT).toFixed(2) : "••••"}
+                  </p>
+                  <p className="text-xs text-white/40">USDT</p>
                 </div>
               </div>
             </div>
@@ -335,41 +375,53 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
                 <p className="text-xs text-white/40">Owned</p>
-                <p className="text-lg font-bold text-white">0</p>
+                <p className="text-lg font-bold text-white">{nftInfo.count}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <p className="text-xs text-white/40">Collection</p>
+                <p className="text-sm font-bold text-white">{nftInfo.symbol}</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
                 <p className="text-xs text-white/40">Floor</p>
                 <p className="text-lg font-bold text-white">—</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                <p className="text-xs text-white/40">Value</p>
-                <p className="text-lg font-bold text-white">$0</p>
-              </div>
             </div>
 
             {/* Grid */}
             <div className="grid grid-cols-2 gap-3">
-              {[
-                { name: "Nature Carbon Credit", sub: "Tokenized tCO₂e", grad: "from-emerald-500/30 to-teal-600/20", icon: Leaf },
-                { name: "Blue Carbon Units", sub: "Marine offset", grad: "from-teal-500/30 to-cyan-600/20", icon: Leaf },
-              ].map((nft, i) => (
-                <div
-                  key={i}
-                  className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
-                >
-                  <div className={`flex h-32 items-center justify-center bg-gradient-to-br ${nft.grad}`}>
-                    {i === 0 ? (
-                      <img src="/images/carbonfi-logo-new.png" alt={nft.name} className="h-16 w-16 object-contain" />
-                    ) : (
-                      <nft.icon className="h-14 w-14 text-emerald-300/80" />
-                    )}
+              {/* Real NFTs owned, else collection placeholders */}
+              {nftInfo.count > 0 ? (
+                nftInfo.tokenIds.map((tokenId, i) => (
+                  <div key={i} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                    <div className="flex h-32 items-center justify-center bg-gradient-to-br from-emerald-500/30 to-teal-600/20">
+                      <img src="/images/carbonfi-logo-new.png" alt={nftInfo.name} className="h-16 w-16 object-contain" />
+                    </div>
+                    <div className="p-3">
+                      <p className="text-sm font-medium text-white">{nftInfo.name}</p>
+                      <p className="text-xs text-white/40">#{tokenId}</p>
+                    </div>
                   </div>
-                  <div className="p-3">
-                    <p className="text-sm font-medium text-white">{nft.name}</p>
-                    <p className="text-xs text-white/40">{nft.sub}</p>
+                ))
+              ) : (
+                [
+                  { name: "Nature Carbon Credit", sub: "Tokenized tCO₂e", grad: "from-emerald-500/30 to-teal-600/20" },
+                  { name: "Blue Carbon Units", sub: "Marine offset", grad: "from-teal-500/30 to-cyan-600/20" },
+                ].map((nft, i) => (
+                  <div key={i} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                    <div className={`flex h-32 items-center justify-center bg-gradient-to-br ${nft.grad}`}>
+                      {i === 0 ? (
+                        <img src="/images/carbonfi-logo-new.png" alt={nft.name} className="h-16 w-16 object-contain" />
+                      ) : (
+                        <Leaf className="h-14 w-14 text-emerald-300/80" />
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <p className="text-sm font-medium text-white">{nft.name}</p>
+                      <p className="text-xs text-white/40">{nft.sub}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}
