@@ -375,11 +375,11 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
             const bal = await c.balanceOf(address)
             result[key] = ethers.formatUnits(bal, t.decimals)
           } catch (e) {
-            console.warn(`Failed to read ${key} balance:`, e)
+            if (process.env.NODE_ENV !== "production") console.warn(`Failed to read ${key} balance:`, (e as Error)?.message?.slice(0, 80))
           }
         }
       } catch (e) {
-        console.error("Failed to read token balances:", e)
+        if (process.env.NODE_ENV !== "production") console.warn("Token balance read skipped:", (e as Error)?.message?.slice(0, 80))
       }
       return result
     },
@@ -417,7 +417,9 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
         }
         return { contract: CARBONFI_NFT_CONTRACT, name, symbol, count, tokenIds }
       } catch (e) {
-        console.error("Failed to read NFTs:", e)
+        // NFT contract may be non-standard or restrict reads to whitelisted
+        // addresses - this is expected; treat as 0 owned without spamming logs.
+        if (process.env.NODE_ENV !== "production") console.warn("NFT read skipped:", (e as Error)?.message?.slice(0, 80))
         return empty
       }
     },
