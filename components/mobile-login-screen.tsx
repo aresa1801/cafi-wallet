@@ -40,8 +40,8 @@ export function MobileLoginScreen({ onLogin, onOpenSetup }: MobileLoginScreenPro
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-green-600 shadow-lg shadow-emerald-500/30">
-              <Leaf className="h-6 w-6 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center">
+              <img src="/images/carbonfi-logo-new.png" alt="CarbonFi" className="h-10 w-10 object-contain" />
             </div>
             <div>
               <p className="text-base font-bold leading-none">CarbonFi Wallet</p>

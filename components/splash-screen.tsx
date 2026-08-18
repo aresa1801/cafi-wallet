@@ -35,10 +35,9 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
       <div className="relative z-10 text-center">
         <div className="relative mx-auto mb-6 inline-block">
-          <div className="flex h-24 w-24 items-center justify-center rounded-[28px] bg-gradient-to-br from-emerald-400 to-green-700 shadow-2xl shadow-emerald-500/40">
-            <Leaf className="h-12 w-12 text-white" />
+          <div className="flex h-24 w-24 items-center justify-center">
+            <img src="/images/carbonfi-logo-new.png" alt="CarbonFi" className="h-24 w-24 object-contain drop-shadow-[0_0_25px_rgba(52,211,153,0.35)]" />
           </div>
-          <div className="absolute inset-0 -z-10 rounded-[28px] bg-emerald-400/30 blur-xl animate-pulse" />
         </div>
 
         <h1 className="text-3xl font-extrabold tracking-tight text-white">CarbonFi</h1>

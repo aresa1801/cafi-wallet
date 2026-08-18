@@ -23,6 +23,7 @@ import {
   Activity,
   ScanLine,
   Globe,
+  Gem,
 } from "lucide-react"
 import { PortfolioStats } from "@/components/portfolio-stats"
 import { TransactionHistory } from "@/components/transaction-history"
@@ -38,7 +39,7 @@ interface MobileWalletDashboardProps {
   walletInfo?: any
 }
 
-type TabKey = "home" | "activity" | "carbon" | "settings"
+type TabKey = "home" | "activity" | "carbon" | "nft" | "settings"
 
 export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDashboardProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("home")
@@ -82,6 +83,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
     { key: "home", label: "Home", icon: Home },
     { key: "activity", label: "Activity", icon: Activity },
     { key: "carbon", label: "Carbon", icon: Leaf },
+    { key: "nft", label: "NFT", icon: Gem },
     { key: "settings", label: "Settings", icon: Settings },
   ]
 
@@ -98,8 +100,8 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
         {/* Top bar */}
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 shadow-lg shadow-emerald-500/30">
-              <Leaf className="h-5 w-5 text-white" />
+            <div className="flex h-9 w-9 items-center justify-center">
+              <img src="/images/carbonfi-logo-new.png" alt="CarbonFi" className="h-9 w-9 object-contain" />
             </div>
             <div>
               <p className="text-sm font-bold leading-none">CarbonFi Wallet</p>
@@ -231,8 +233,8 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
                 onClick={() => setActiveTab("activity")}
                 className="flex w-full items-center gap-3 border-t border-white/5 px-4 py-3.5 transition hover:bg-white/5"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#627EEA]/20 ring-1 ring-[#627EEA]/40">
-                  <span className="text-sm font-bold text-[#8ea7ff]">Ξ</span>
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
+                  <img src="/images/eth-logo.svg" alt="ETH" className="h-6 w-6" />
                 </div>
                 <div className="flex-1 text-left">
                   <p className="text-sm font-medium text-white">Ethereum</p>
@@ -244,12 +246,25 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
                 </div>
               </button>
               <div className="flex w-full items-center gap-3 border-t border-white/5 px-4 py-3.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-500/40">
-                  <Leaf className="h-5 w-5 text-emerald-400" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
+                  <img src="/images/carbonfi-logo-new.png" alt="CAFI" className="h-6 w-6 rounded-full object-contain" />
                 </div>
                 <div className="flex-1 text-left">
                   <p className="text-sm font-medium text-white">CarbonFi Token</p>
                   <p className="text-xs text-white/40">CAFI</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-white">0</p>
+                  <p className="text-xs text-white/40">— USD</p>
+                </div>
+              </div>
+              <div className="flex w-full items-center gap-3 border-t border-white/5 px-4 py-3.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
+                  <img src="/images/usdt-logo.svg" alt="USDT" className="h-6 w-6" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium text-white">Tether USD</p>
+                  <p className="text-xs text-white/40">USDT</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-white">0</p>
@@ -308,6 +323,57 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
           </div>
         )}
 
+        {/* ======================= NFT TAB ======================= */}
+        {activeTab === "nft" && (
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-bold text-white">NFT Collection</h2>
+              <p className="text-xs text-white/40">Your carbon credit &amp; digital collectibles</p>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <p className="text-xs text-white/40">Owned</p>
+                <p className="text-lg font-bold text-white">0</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <p className="text-xs text-white/40">Floor</p>
+                <p className="text-lg font-bold text-white">—</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <p className="text-xs text-white/40">Value</p>
+                <p className="text-lg font-bold text-white">$0</p>
+              </div>
+            </div>
+
+            {/* Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { name: "Nature Carbon Credit", sub: "Tokenized tCO₂e", grad: "from-emerald-500/30 to-teal-600/20", icon: Leaf },
+                { name: "Blue Carbon Units", sub: "Marine offset", grad: "from-teal-500/30 to-cyan-600/20", icon: Leaf },
+              ].map((nft, i) => (
+                <div
+                  key={i}
+                  className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                >
+                  <div className={`flex h-32 items-center justify-center bg-gradient-to-br ${nft.grad}`}>
+                    {i === 0 ? (
+                      <img src="/images/carbonfi-logo-new.png" alt={nft.name} className="h-16 w-16 object-contain" />
+                    ) : (
+                      <nft.icon className="h-14 w-14 text-emerald-300/80" />
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <p className="text-sm font-medium text-white">{nft.name}</p>
+                    <p className="text-xs text-white/40">{nft.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ======================= SETTINGS TAB ======================= */}
         {activeTab === "settings" && (
           <div className="space-y-4">
@@ -359,7 +425,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
 
       {/* Bottom Navigation */}
       <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-white/10 bg-[#0B1210]/90 backdrop-blur-xl">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           {navItems.map((item) => {
             const Icon = item.icon
             const active = activeTab === item.key
