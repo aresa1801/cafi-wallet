@@ -55,12 +55,13 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
     CAFI: "0",
     USDT: "0",
   })
-  const [nftInfo, setNftInfo] = useState<{ count: number; name: string; symbol: string; tokenIds: string[] }>({
-    count: 0,
-    name: "CarbonFi NFT",
-    symbol: "CAFI-NFT",
-    tokenIds: [],
-  })
+  const [nftInfo, setNftInfo] = useState<{
+    count: number
+    name: string
+    symbol: string
+    tokenIds: string[]
+    items: any[]
+  }>({ count: 0, name: "CarbonFi NFT", symbol: "CAFI-NFT", tokenIds: [], items: [] })
   const [assetsLoaded, setAssetsLoaded] = useState(false)
 
   const { isConnected, accounts, balance, refreshBalance, disconnect, getTokenBalances, getNFTs } =
@@ -75,7 +76,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
         .finally(() => setAssetsLoaded(true))
       getNFTs(accounts[0])
         .then((info) =>
-          setNftInfo({ count: info.count, name: info.name, symbol: info.symbol, tokenIds: info.tokenIds }),
+          setNftInfo({ count: info.count, name: info.name, symbol: info.symbol, tokenIds: info.tokenIds, items: info.items }),
         )
         .catch(() => {})
     }
@@ -88,7 +89,7 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
       getTokenBalances(accounts[0]).then(setTokenBalances)
       getNFTs(accounts[0])
         .then((info) =>
-          setNftInfo({ count: info.count, name: info.name, symbol: info.symbol, tokenIds: info.tokenIds }),
+          setNftInfo({ count: info.count, name: info.name, symbol: info.symbol, tokenIds: info.tokenIds, items: info.items }),
         )
         .catch(() => {})
     }
@@ -391,17 +392,31 @@ export function MobileWalletDashboard({ walletType, walletInfo }: MobileWalletDa
             <div className="grid grid-cols-2 gap-3">
               {/* Real NFTs owned, else collection placeholders */}
               {nftInfo.count > 0 ? (
-                nftInfo.tokenIds.map((tokenId, i) => (
-                  <div key={i} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-                    <div className="flex h-32 items-center justify-center bg-gradient-to-br from-emerald-500/30 to-teal-600/20">
-                      <img src="/images/carbonfi-logo-new.png" alt={nftInfo.name} className="h-16 w-16 object-contain" />
+                nftInfo.items.map((nft, i) => {
+                  // Derive a display name/fields from the on-chain project data
+                  const proj = nft.project
+                  const projName =
+                    (proj && (proj.name || proj[0])) || `Carbon Credit #${nft.tokenId}`
+                  const sub = `×${nft.amount} · ${nft.amount > 1 ? "units" : "unit"}`
+                  const tCO2 = proj && proj.tons != null ? `${proj.tons} tCO₂e` : ""
+                  return (
+                    <div key={i} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                      <div className="relative flex h-32 items-center justify-center bg-gradient-to-br from-emerald-500/30 to-teal-600/20">
+                        <img src="/images/carbonfi-logo-new.png" alt={nft.name} className="h-16 w-16 object-contain" />
+                        {nft.expired ? (
+                          <span className="absolute top-2 right-2 rounded-full bg-red-500/80 px-2 py-0.5 text-[10px] font-semibold text-white">
+                            Expired
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="p-3">
+                        <p className="truncate text-sm font-medium text-white">{projName}</p>
+                        <p className="text-xs text-white/40">{sub}</p>
+                        {tCO2 ? <p className="text-xs font-medium text-emerald-400">{tCO2}</p> : null}
+                      </div>
                     </div>
-                    <div className="p-3">
-                      <p className="text-sm font-medium text-white">{nftInfo.name}</p>
-                      <p className="text-xs text-white/40">#{tokenId}</p>
-                    </div>
-                  </div>
-                ))
+                  )
+                })
               ) : (
                 [
                   { name: "Nature Carbon Credit", sub: "Tokenized tCO₂e", grad: "from-emerald-500/30 to-teal-600/20" },

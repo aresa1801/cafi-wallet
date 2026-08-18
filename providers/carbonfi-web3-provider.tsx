@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
 import { ethers, type BrowserProvider, type JsonRpcSigner, type Eip1193Provider } from "ethers"
+import carbonNftAbi from "../lib/carbon-nft.abi.json"
 
 /**
  * CarbonFi Wallet — Ethereum Mainnet web3 provider (REAL, not mock).
@@ -57,7 +58,14 @@ export interface CarbonFiWeb3ContextType {
   getTokenBalances: (address: string) => Promise<{ ETH: string; CAFI: string; USDT: string }>
   getNFTs: (
     address: string,
-  ) => Promise<{ contract: string; name: string; symbol: string; count: number; tokenIds: string[] }>
+  ) => Promise<{
+    contract: string
+    name: string
+    symbol: string
+    count: number
+    tokenIds: string[]
+    items: any[]
+  }>
 
   // dApp connection
   connectedDApp: string | null
@@ -110,14 +118,6 @@ export const CARBONFI_NFT_CONTRACT = "0x50987200Bb1BFb56939eb7b8965c3033d7e82Cf8
 const ERC20_ABI = [
   "function balanceOf(address owner) view returns (uint256)",
   "function decimals() view returns (uint8)",
-  "function symbol() view returns (string)",
-]
-
-const ERC721_ABI = [
-  "function balanceOf(address owner) view returns (uint256)",
-  "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)",
-  "function tokenURI(uint256 tokenId) view returns (string)",
-  "function name() view returns (string)",
   "function symbol() view returns (string)",
 ]
 
@@ -389,36 +389,102 @@ export function CarbonFiWeb3Provider({ children }: { children: ReactNode }) {
   const getNFTs = useCallback(
     async (
       address: string,
-    ): Promise<{ contract: string; name: string; symbol: string; count: number; tokenIds: string[] }> => {
+    ): Promise<{ contract: string; name: string; symbol: string; count: number; tokenIds: string[]; items: any[] }> => {
       const empty = {
         contract: CARBONFI_NFT_CONTRACT,
         name: "CarbonFi NFT",
         symbol: "CAFI-NFT",
         count: 0,
         tokenIds: [],
+        items: [],
       }
       try {
         const rpc = await createEthProvider()
-        const nft = new ethers.Contract(CARBONFI_NFT_CONTRACT, ERC721_ABI, rpc)
-        const bal = await nft.balanceOf(address)
-        const count = Number(bal)
-        let name = "CarbonFi NFT",
-          symbol = "CAFI-NFT"
+        const nft = new ethers.Contract(CARBONFI_NFT_CONTRACT, carbonNftAbi as any, rpc)
+
+        // ERC-1155 CarbonNFT: tokenId = carbonType * TOKEN_ID_MULTIPLIER + counter.
+        // Enumerate by scanning each carbonType's counter range (batched balanceOfBatch).
+        let multiplier = 100000000000n
         try {
-          name = await nft.name()
-          symbol = await nft.symbol()
+          multiplier = await nft.TOKEN_ID_MULTIPLIER()
         } catch {}
-        const tokenIds: string[] = []
-        for (let i = 0; i < count && i < 50; i++) {
+
+        // carbonType 0..7 (uint8), scan each type's counter
+        const candidateIds: { id: bigint; carbonType: number }[] = []
+        const scanLimit = 200 // safety cap per type
+        for (let t = 0; t < 8; t++) {
+          let counter = 0n
           try {
-            const id = await nft.tokenOfOwnerByIndex(address, i)
-            tokenIds.push(id.toString())
-          } catch {}
+            counter = await nft.typeCounter(t)
+          } catch {
+            continue
+          }
+          const n = Number(counter)
+          const start = Math.max(1, n - scanLimit + 1)
+          for (let i = start; i <= n; i++) {
+            candidateIds.push({ id: BigInt(t) * multiplier + BigInt(i), carbonType: t })
+          }
         }
-        return { contract: CARBONFI_NFT_CONTRACT, name, symbol, count, tokenIds }
+
+        if (candidateIds.length === 0) return empty
+
+        // Batch read balances in chunks of 100
+        const owned: { id: bigint; carbonType: number; amount: number }[] = []
+        const account = address.toLowerCase()
+        for (let i = 0; i < candidateIds.length; i += 100) {
+          const chunk = candidateIds.slice(i, i + 100)
+          try {
+            const balances = await nft.balanceOfBatch(
+              chunk.map(() => account),
+              chunk.map((c) => c.id),
+            )
+            chunk.forEach((c, idx) => {
+              const amt = Number(balances[idx])
+              if (amt > 0) owned.push({ id: c.id, carbonType: c.carbonType, amount: amt })
+            })
+          } catch {
+            // fall back: per-id balanceOf
+            for (const c of chunk) {
+              try {
+                const amt = Number(await nft.balanceOf(account, c.id))
+                if (amt > 0) owned.push({ id: c.id, carbonType: c.carbonType, amount: amt })
+              } catch {}
+            }
+          }
+        }
+
+        const items: any[] = []
+        for (const o of owned) {
+          const item: any = {
+            tokenId: o.id.toString(),
+            carbonType: o.carbonType,
+            amount: o.amount,
+            uri: "",
+            project: null,
+            expired: false,
+          }
+          try {
+            item.uri = await nft.uri(o.id)
+          } catch {}
+          try {
+            const p = await nft.getProject(o.id)
+            item.project = p
+          } catch {}
+          try {
+            item.expired = await nft.isExpired(o.id)
+          } catch {}
+          items.push(item)
+        }
+
+        return {
+          contract: CARBONFI_NFT_CONTRACT,
+          name: "CarbonFi NFT",
+          symbol: "CAFI-NFT",
+          count: items.length,
+          tokenIds: items.map((i) => i.tokenId),
+          items,
+        }
       } catch (e) {
-        // NFT contract may be non-standard or restrict reads to whitelisted
-        // addresses - this is expected; treat as 0 owned without spamming logs.
         if (process.env.NODE_ENV !== "production") console.warn("NFT read skipped:", (e as Error)?.message?.slice(0, 80))
         return empty
       }
